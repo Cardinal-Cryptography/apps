@@ -200,7 +200,6 @@ function extractSingle (api: ApiPromise, allAccounts: string[], derive: PatchedD
     const exp = (exposurePaged.isSome && exposurePaged.unwrap()) || forwardCompatibleExposurePaged;
     const expMeta = (exposureMeta.isSome && exposureMeta.unwrap()) || forwardCompatibleExposureMeta;
 
-    allOtherNominators.length > 0 && (window.data = allOtherNominators)
     // some overrides (e.g. Darwinia Crab) does not have the own/total field in Exposure
     let [bondOwn, bondTotal] = expMeta
       ? [expMeta.own.unwrap(), expMeta.total.unwrap()]
