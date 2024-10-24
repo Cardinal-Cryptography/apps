@@ -67,6 +67,8 @@ function Validator ({ allSlashes, canSelect, filterName, info: { accountId, bond
     return null;
   }
 
+  console.log(nominatedBy);
+
   return (
     <tr>
       <Table.Column.Favorite
