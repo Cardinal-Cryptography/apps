@@ -40,14 +40,14 @@ interface StakingState {
   stakeOwn?: BN;
 }
 
-function expandInfo ({ exposureMeta, exposurePaged, validatorPrefs }: ValidatorInfo): StakingState {
-  let nominators: NominatorValue[] | undefined;
+function expandInfo ({ exposureMeta, nominators, validatorPrefs }: ValidatorInfo): StakingState {
+  let nominatorsParsed: NominatorValue[] | undefined;
   let stakeTotal: BN | undefined;
   let stakeOther: BN | undefined;
   let stakeOwn: BN | undefined;
 
   if (exposureMeta?.total) {
-    nominators = exposurePaged.others.map(({ value, who }) => ({
+    nominatorsParsed = nominators.map(({ value, who }) => ({
       nominatorId: who.toString(),
       value: value.unwrap()
     }));
@@ -60,7 +60,7 @@ function expandInfo ({ exposureMeta, exposurePaged, validatorPrefs }: ValidatorI
 
   return {
     commission: commission?.toHuman(),
-    nominators,
+    nominators: nominatorsParsed,
     stakeOther,
     stakeOwn,
     stakeTotal

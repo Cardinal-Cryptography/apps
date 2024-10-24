@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ApiPromise } from '@polkadot/api';
-import type { DeriveSessionInfo, DeriveStakingElected, DeriveStakingQuery, DeriveStakingWaiting } from '@polkadot/api-derive/types';
+import type { DeriveSessionInfo, DeriveStakingElected, DeriveStakingWaiting } from '@polkadot/api-derive/types';
 import type { Inflation } from '@polkadot/react-hooks/types';
 import type { Option, u32, Vec } from '@polkadot/types';
-import type { PalletStakingStakingLedger, SpStakingExposure, SpStakingExposurePage, SpStakingIndividualExposure, SpStakingPagedExposureMetadata } from '@polkadot/types/lookup';
+import type { PalletStakingStakingLedger, SpStakingExposure, SpStakingExposurePage, SpStakingPagedExposureMetadata } from '@polkadot/types/lookup';
 import type { EraValidators, SortedTargets, TargetSortBy, ValidatorInfo } from './types.js';
 
 import { useMemo } from 'react';
@@ -33,18 +33,6 @@ interface MultiResult {
 
 interface OldLedger {
   claimedRewards: Vec<u32>;
-}
-
-interface PatchedDeriveStakingQuery extends DeriveStakingQuery {
-  allOtherNominators: Vec<SpStakingIndividualExposure>;
-}
-
-interface PatchedDeriveStakingElected extends DeriveStakingElected {
-  info: PatchedDeriveStakingQuery[];
-}
-
-interface PatchedDeriveStakingWaiting extends DeriveStakingWaiting {
-  info: PatchedDeriveStakingQuery[];
 }
 
 const EMPTY_PARTIAL: Partial<SortedTargets> = {};
@@ -187,7 +175,7 @@ function getForwardCompatibleExposureData (api: ApiPromise, legacyExposure: SpSt
   };
 }
 
-function extractSingle (api: ApiPromise, allAccounts: string[], derive: PatchedDeriveStakingElected | PatchedDeriveStakingWaiting, favorites: string[], { activeEra, lastEra }: LastEra, historyDepth?: BN, withReturns?: boolean): [ValidatorInfo[], Record<string, BN>] {
+function extractSingle (api: ApiPromise, allAccounts: string[], derive: DeriveStakingElected | DeriveStakingWaiting, favorites: string[], { activeEra, lastEra }: LastEra, historyDepth?: BN, withReturns?: boolean): [ValidatorInfo[], Record<string, BN>] {
   const nominators: Record<string, BN> = {};
   const emptyExposure = api.createType('SpStakingExposurePage');
   const emptyExposureMeta = api.createType('SpStakingPagedExposureMetadata');
@@ -254,6 +242,7 @@ function extractSingle (api: ApiPromise, allAccounts: string[], derive: PatchedD
         ? lastEraPayout
         : undefined,
       minNominated,
+      nominators: allOtherNominators,
       numNominators: expMeta?.nominatorCount.toNumber() ?? 0,
       numRecentPayouts: earliestEra
         ? rewards.filter((era) => era.gte(earliestEra)).length
@@ -292,7 +281,7 @@ function addReturns (inflation: Inflation, baseInfo: Partial<SortedTargets>): Pa
   return { ...baseInfo, validators: sortValidators(validators) };
 }
 
-function extractBaseInfo (api: ApiPromise, allAccounts: string[], electedDerive: PatchedDeriveStakingElected, waitingDerive: PatchedDeriveStakingWaiting, favorites: string[], totalIssuance: BN, lastEraInfo: LastEra, historyDepth?: BN): Partial<SortedTargets> {
+function extractBaseInfo (api: ApiPromise, allAccounts: string[], electedDerive: DeriveStakingElected, waitingDerive: DeriveStakingWaiting, favorites: string[], totalIssuance: BN, lastEraInfo: LastEra, historyDepth?: BN): Partial<SortedTargets> {
   const [elected, nominators] = extractSingle(api, allAccounts, electedDerive, favorites, lastEraInfo, historyDepth, true);
   const [waiting] = extractSingle(api, allAccounts, waitingDerive, favorites, lastEraInfo);
   const activeTotals = elected
@@ -351,8 +340,8 @@ function useSortedTargetsImpl (favorites: string[], withLedger: boolean): Sorted
     api.query.staking.minValidatorBond,
     api.query.balances?.totalIssuance
   ], OPT_MULTI);
-  const electedInfo = useCall<PatchedDeriveStakingElected>(api.derive.staking.electedInfo, [{ ...DEFAULT_FLAGS_ELECTED, withClaimedRewardsEras: withLedger, withLedger }]);
-  const waitingInfo = useCall<PatchedDeriveStakingWaiting>(api.derive.staking.waitingInfo, [{ ...DEFAULT_FLAGS_WAITING, withClaimedRewardsEras: withLedger, withLedger }]);
+  const electedInfo = useCall<DeriveStakingElected>(api.derive.staking.electedInfo, [{ ...DEFAULT_FLAGS_ELECTED, withClaimedRewardsEras: withLedger, withLedger }]);
+  const waitingInfo = useCall<DeriveStakingWaiting>(api.derive.staking.waitingInfo, [{ ...DEFAULT_FLAGS_WAITING, withClaimedRewardsEras: withLedger, withLedger }]);
   const lastEraInfo = useCall<LastEra>(api.derive.session.info, undefined, OPT_ERA);
   const eraValidators = useCall<EraValidators>(api.query.elections.currentEraValidators);
 
