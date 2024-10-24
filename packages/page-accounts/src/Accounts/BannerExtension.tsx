@@ -65,31 +65,7 @@ function ExtensionWarning (): React.ReactElement | null {
   );
 }
 
-function BannerExtension () {
-  const { t } = useTranslation();
-
-  return (
-    <>
-      <ExtensionWarning />
-      <Banner type='warning'>
-        <p>
-          {t('For extra protection, consider using the')}&nbsp;
-          <a
-            href='https://chrome.google.com/webstore/detail/threatslayer/mgcmocglffknmbhhfjihifeldhghihpj'
-            rel='noreferrer'
-            target='_blank'
-          >
-            Threat Slayer
-          </a>
-          &nbsp;{t('extension which protects you from dangerous websites in real-time.')}
-        </p>
-
-      </Banner>
-    </>
-  );
-}
-
-export default onlyOnWeb(React.memo(BannerExtension));
+export default onlyOnWeb(React.memo(ExtensionWarning));
 
 const SafetyInfoList = styled.ul`
   margin-block: 0;
