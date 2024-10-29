@@ -12,6 +12,8 @@ import { useEffect, useState } from 'react';
 import { createNamedHook, useApi, useCall, useIsMountedRef } from '@polkadot/react-hooks';
 import { BN_ZERO } from '@polkadot/util';
 
+import useCombinedErasStakersPaged from './useCombinedErasStakersPaged.js';
+
 interface Inactives {
   nomsActive?: string[];
   nomsChilled?: string[];
@@ -93,11 +95,12 @@ function useInactivesImpl (stashId: string, nominees?: string[]): Inactives {
   const mountedRef = useIsMountedRef();
   const [state, setState] = useState<Inactives>({});
   const indexes = useCall<DeriveSessionIndexes>(api.derive.session.indexes);
+  const combinedExposures = useCombinedErasStakersPaged(indexes?.activeEra, nominees);
 
   useEffect((): () => void => {
     let unsub: (() => void) | undefined;
 
-    if (mountedRef.current && nominees?.length && indexes) {
+    if (mountedRef.current && nominees?.length && indexes && combinedExposures) {
       api
         .queryMulti(
           [[api.query.staking.nominators, stashId] as QueryableStorageMultiArg<'promise'>]
@@ -110,11 +113,11 @@ function useInactivesImpl (stashId: string, nominees?: string[]): Inactives {
               nominees.map((id) => [api.query.staking.slashingSpans, id])
             ),
           ([optNominators, ...exposuresAndSpans]: [Option<Nominations>, ...(Exposure | Option<SlashingSpans>)[]]): void => {
-            const exposures = exposuresAndSpans.slice(0, nominees.length) as Exposure[];
+            // const exposures = exposuresAndSpans.slice(0, nominees.length) as Exposure[];
             const slashes = exposuresAndSpans.slice(nominees.length) as Option<SlashingSpans>[];
 
             mountedRef.current && setState(
-              extractState(api, stashId, slashes, nominees, indexes, optNominators.unwrapOrDefault().submittedIn, exposures)
+              extractState(api, stashId, slashes, nominees, indexes, optNominators.unwrapOrDefault().submittedIn, combinedExposures)
             );
           }
         )
@@ -126,7 +129,7 @@ function useInactivesImpl (stashId: string, nominees?: string[]): Inactives {
     return (): void => {
       unsub && unsub();
     };
-  }, [api, indexes, mountedRef, nominees, stashId]);
+  }, [api, indexes, mountedRef, nominees, stashId, combinedExposures]);
 
   return state;
 }
