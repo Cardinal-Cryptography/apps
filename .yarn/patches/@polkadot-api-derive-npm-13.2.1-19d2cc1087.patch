@@ -1,8 +1,18 @@
 diff --git a/cjs/staking/query.js b/cjs/staking/query.js
-index 24826c714d1c6609d65ec379c385e9331e9e30cf..bb28bdbf59b6a0d73563b36e634df9cf2fc645e7 100644
+index 24826c714d1c6609d65ec379c385e9331e9e30cf..5db6fbf9f97269e5812d11843ba2e36a59186eaf 100644
 --- a/cjs/staking/query.js
 +++ b/cjs/staking/query.js
-@@ -58,7 +58,7 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
+@@ -54,11 +54,17 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
+                     ? era
+                     : -1;
+             }
++            // There is an migration period of 84 eras, where historical validators are still kept under `erasStakers`,
++            // but rewards are getting stored under `claimedRewards`. At least one page needs to be claimed.
++            if (rewardsPerEra && rewardsPerEra.has(era) && (!overviewPerEra || !overviewPerEra.has(era))) {
++                const rewards = rewardsPerEra.get(era);
++                return rewards.length > 0 ? era : -1;
++            }
+             return -1;
          });
      });
  }
@@ -11,7 +21,7 @@ index 24826c714d1c6609d65ec379c385e9331e9e30cf..bb28bdbf59b6a0d73563b36e634df9cf
      return {
          accountId: stashId,
          claimedRewardsEras: filterClaimedRewards(api, claimedRewards),
-@@ -72,8 +72,9 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
+@@ -72,8 +78,9 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
          rewardDestination: rewardDestinationCompat(rewardDestinationOpts),
          stakingLedger: stakingLedgerOpt.unwrapOrDefault(),
          stashId,
@@ -23,7 +33,7 @@ index 24826c714d1c6609d65ec379c385e9331e9e30cf..bb28bdbf59b6a0d73563b36e634df9cf
  }
  function getLedgers(api, optIds, { withLedger = false }) {
      const ids = optIds
-@@ -133,11 +134,26 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
+@@ -133,11 +140,26 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
              : (0, rxjs_1.of)(stashIds.map(() => emptyClaimedRewards)),
          withExposureErasStakersLegacy && api.query.staking.erasStakers
              ? (0, rxjs_1.combineLatest)(stashIds.map((s) => api.query.staking.erasStakers(activeEra, s)))
@@ -80,10 +90,20 @@ index 5d74f9b00630b7cbfe1fbab5cf584b18465be262..d346ec1979d17f2a56e639ce59146946
              (0, rxjs_1.map)((keys) => [...new Set(keys.map(({ args: [, accountId] }) => accountId.toString()))].map((a) => api.registry.createType('AccountId', a))))
              : api.query.staking['currentElected']());
 diff --git a/staking/query.js b/staking/query.js
-index f9448e7b554df170c96971eccbe0c3c94f0fd695..342d569897e25dc40f9fdf7815f6dcf2e174772c 100644
+index f9448e7b554df170c96971eccbe0c3c94f0fd695..3f1d4d12ed078e742ced53fbe845c7ba840da673 100644
 --- a/staking/query.js
 +++ b/staking/query.js
-@@ -54,7 +54,7 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
+@@ -50,11 +50,17 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
+                     ? era
+                     : -1;
+             }
++            // There is an migration period of 84 eras, where historical validators are still kept under `erasStakers`,
++            // but rewards are getting stored under `claimedRewards`. At least one page needs to be claimed.
++            if (rewardsPerEra && rewardsPerEra.has(era) && (!overviewPerEra || !overviewPerEra.has(era))) {
++                const rewards = rewardsPerEra.get(era);
++                return rewards.length > 0 ? era : -1;
++            }
+             return -1;
          });
      });
  }
@@ -92,7 +112,7 @@ index f9448e7b554df170c96971eccbe0c3c94f0fd695..342d569897e25dc40f9fdf7815f6dcf2
      return {
          accountId: stashId,
          claimedRewardsEras: filterClaimedRewards(api, claimedRewards),
-@@ -68,8 +68,9 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
+@@ -68,8 +74,9 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
          rewardDestination: rewardDestinationCompat(rewardDestinationOpts),
          stakingLedger: stakingLedgerOpt.unwrapOrDefault(),
          stashId,
@@ -104,7 +124,7 @@ index f9448e7b554df170c96971eccbe0c3c94f0fd695..342d569897e25dc40f9fdf7815f6dcf2
  }
  function getLedgers(api, optIds, { withLedger = false }) {
      const ids = optIds
-@@ -129,11 +130,26 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
+@@ -129,11 +136,26 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
              : of(stashIds.map(() => emptyClaimedRewards)),
          withExposureErasStakersLegacy && api.query.staking.erasStakers
              ? combineLatest(stashIds.map((s) => api.query.staking.erasStakers(activeEra, s)))

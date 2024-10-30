@@ -49,7 +49,7 @@ const OPT_REWARDS = { withParams: true };
 function getLegacyRewards (ledger: PalletStakingStakingLedger, claimedRewardsEras?: Vec<u32>): u32[] {
   const legacyRewards = ledger.legacyClaimedRewards || (ledger as unknown as { claimedRewards: u32[] }).claimedRewards || [];
 
-  return legacyRewards.concat(claimedRewardsEras?.toArray() || []);
+  return legacyRewards.concat((claimedRewardsEras?.toArray() || []).reverse());
 }
 
 function getRewards ([[stashIds], available]: [[string[]], DeriveStakerReward[][]]): State {
