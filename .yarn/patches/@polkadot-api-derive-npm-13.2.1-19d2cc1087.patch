@@ -1,5 +1,5 @@
 diff --git a/cjs/staking/query.js b/cjs/staking/query.js
-index 24826c714d1c6609d65ec379c385e9331e9e30cf..5db6fbf9f97269e5812d11843ba2e36a59186eaf 100644
+index 24826c714d1c6609d65ec379c385e9331e9e30cf..04d90275bfd3731d876629845d2a5fc183b0c01e 100644
 --- a/cjs/staking/query.js
 +++ b/cjs/staking/query.js
 @@ -54,11 +54,17 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
@@ -21,24 +21,28 @@ index 24826c714d1c6609d65ec379c385e9331e9e30cf..5db6fbf9f97269e5812d11843ba2e36a
      return {
          accountId: stashId,
          claimedRewardsEras: filterClaimedRewards(api, claimedRewards),
-@@ -72,8 +78,9 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
+@@ -72,8 +78,11 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
          rewardDestination: rewardDestinationCompat(rewardDestinationOpts),
          stakingLedger: stakingLedgerOpt.unwrapOrDefault(),
          stashId,
 -        validatorPrefs
 -    };
 +        validatorPrefs,
++        // Expose validators' all nominators. It used to be done by `erasStakers`, but now requires combining entries
++        // from all pages of `erasStakersPaged` which is cumbersome to do on frontend.
 +        allOtherNominators
 +};
  }
  function getLedgers(api, optIds, { withLedger = false }) {
      const ids = optIds
-@@ -133,11 +140,26 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
+@@ -133,11 +142,28 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
              : (0, rxjs_1.of)(stashIds.map(() => emptyClaimedRewards)),
          withExposureErasStakersLegacy && api.query.staking.erasStakers
              ? (0, rxjs_1.combineLatest)(stashIds.map((s) => api.query.staking.erasStakers(activeEra, s)))
 -            : (0, rxjs_1.of)(stashIds.map(() => emptyExpoEraStakers))
 +            : (0, rxjs_1.of)(stashIds.map(() => emptyExpoEraStakers)),
++        // Expose validators' all nominators. It used to be done by `erasStakers`, but now requires combining entries
++        // from all pages of `erasStakersPaged` which is cumbersome to do on frontend.
 +        withExposure && api.query.staking.erasStakersPaged
 +            ? (0, rxjs_1.combineLatest)(
 +                stashIds.map(
@@ -63,34 +67,30 @@ index 24826c714d1c6609d65ec379c385e9331e9e30cf..5db6fbf9f97269e5812d11843ba2e36a
  /**
   * @description From a stash, retrieve the controllerId and all relevant details
 diff --git a/cjs/staking/validators.js b/cjs/staking/validators.js
-index 5d74f9b00630b7cbfe1fbab5cf584b18465be262..d346ec1979d17f2a56e639ce591469462236bdfa 100644
+index 5d74f9b00630b7cbfe1fbab5cf584b18465be262..6261b5b397528ca376c6b60fbd4c28e581c780af 100644
 --- a/cjs/staking/validators.js
 +++ b/cjs/staking/validators.js
-@@ -7,18 +7,19 @@ const index_js_1 = require("../util/index.js");
+@@ -7,11 +7,16 @@ const index_js_1 = require("../util/index.js");
  function nextElected(instanceId, api) {
      return (0, index_js_1.memo)(instanceId, () => 
      // Compatibility for future generation changes in staking.
 -    api.query.staking.erasStakersPaged
++    // Use `erasStakersOverview` instead of `erasStakersPaged` to get all era's validators instead of
++    // era's validators nominated by at least one other nominator.
 +    api.query.staking.erasStakersOverview
          ? api.derive.session.indexes().pipe(
          // only populate for next era in the last session, so track both here - entries are not
          // subscriptions, so we need a trigger - currentIndex acts as that trigger to refresh
 -        (0, rxjs_1.switchMap)(({ currentEra }) => api.query.staking.erasStakersPaged.keys(currentEra)), 
 +        (0, rxjs_1.switchMap)(({ currentEra }) => api.query.staking.erasStakersOverview.keys(currentEra).pipe(map((keys) => [keys, currentEra]))),
++        // Even though `erasStakersOverview` is defined it might not be populated.
++        // We check if `erasStakersOverview` storage has been populated and fallback to `erasStakers` if not.
 +        (0, rxjs_1.switchMap)(([keys, currentEra]) => keys.length === 0 && api.query.staking.erasStakers ? api.query.staking.erasStakers.keys(currentEra) : of(keys)),
          // Dedupe any duplicates
          (0, rxjs_1.map)((keys) => [...new Set(keys.map(({ args: [, accountId] }) => accountId.toString()))].map((a) => api.registry.createType('AccountId', a))))
          : api.query.staking.erasStakers
-             ? api.derive.session.indexes().pipe(
-             // only populate for next era in the last session, so track both here - entries are not
-             // subscriptions, so we need a trigger - currentIndex acts as that trigger to refresh
--            (0, rxjs_1.switchMap)(({ currentEra }) => api.query.staking.erasStakers.keys(currentEra)), 
-+            (0, rxjs_1.switchMap)(({ currentEra }) => api.query.staking.erasStakers.keys(currentEra)),
-             // Dedupe any duplicates
-             (0, rxjs_1.map)((keys) => [...new Set(keys.map(({ args: [, accountId] }) => accountId.toString()))].map((a) => api.registry.createType('AccountId', a))))
-             : api.query.staking['currentElected']());
 diff --git a/staking/query.js b/staking/query.js
-index f9448e7b554df170c96971eccbe0c3c94f0fd695..3f1d4d12ed078e742ced53fbe845c7ba840da673 100644
+index f9448e7b554df170c96971eccbe0c3c94f0fd695..e01c0ad9cf72e9d082c3de610d03c0732bbfda06 100644
 --- a/staking/query.js
 +++ b/staking/query.js
 @@ -50,11 +50,17 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
@@ -112,24 +112,28 @@ index f9448e7b554df170c96971eccbe0c3c94f0fd695..3f1d4d12ed078e742ced53fbe845c7ba
      return {
          accountId: stashId,
          claimedRewardsEras: filterClaimedRewards(api, claimedRewards),
-@@ -68,8 +74,9 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
+@@ -68,8 +74,11 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
          rewardDestination: rewardDestinationCompat(rewardDestinationOpts),
          stakingLedger: stakingLedgerOpt.unwrapOrDefault(),
          stashId,
 -        validatorPrefs
 -    };
 +        validatorPrefs,
++        // Expose validators' all nominators. It used to be done by `erasStakers`, but now requires combining entries
++        // from all pages of `erasStakersPaged` which is cumbersome to do on frontend.
 +        allOtherNominators
 +};
  }
  function getLedgers(api, optIds, { withLedger = false }) {
      const ids = optIds
-@@ -129,11 +136,26 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
+@@ -129,11 +138,28 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
              : of(stashIds.map(() => emptyClaimedRewards)),
          withExposureErasStakersLegacy && api.query.staking.erasStakers
              ? combineLatest(stashIds.map((s) => api.query.staking.erasStakers(activeEra, s)))
 -            : of(stashIds.map(() => emptyExpoEraStakers))
 +            : of(stashIds.map(() => emptyExpoEraStakers)),
++        // Expose validators' all nominators. It used to be done by `erasStakers`, but now requires combining entries
++        // from all pages of `erasStakersPaged` which is cumbersome to do on frontend.
 +        withExposure && api.query.staking.erasStakersPaged
 +            ? combineLatest(
 +                stashIds.map(
@@ -174,29 +178,25 @@ index 74e54287d69b3cfc7c9713cd744737bc7ac1078f..4dd7d49cb6baf9fea6f4b99e7cf91b40
  export interface DeriveStakingQuery extends DeriveStakingStash {
      accountId: AccountId;
 diff --git a/staking/validators.js b/staking/validators.js
-index bfaae2c0e0da493cc09b60fbb45ad9ceef0faf27..b9b3d4766ea94defa05b0c505821987724cc3dc2 100644
+index bfaae2c0e0da493cc09b60fbb45ad9ceef0faf27..5eefaa5cc48e47aaa2e082e744848784f00704f1 100644
 --- a/staking/validators.js
 +++ b/staking/validators.js
-@@ -3,18 +3,19 @@ import { memo } from '../util/index.js';
+@@ -3,11 +3,16 @@ import { memo } from '../util/index.js';
  export function nextElected(instanceId, api) {
      return memo(instanceId, () => 
      // Compatibility for future generation changes in staking.
 -    api.query.staking.erasStakersPaged
++    // Use `erasStakersOverview` instead of `erasStakersPaged` to get all era's validators instead of
++    // era's validators nominated by at least one other nominator.
 +    api.query.staking.erasStakersOverview
          ? api.derive.session.indexes().pipe(
          // only populate for next era in the last session, so track both here - entries are not
          // subscriptions, so we need a trigger - currentIndex acts as that trigger to refresh
 -        switchMap(({ currentEra }) => api.query.staking.erasStakersPaged.keys(currentEra)), 
 +        switchMap(({ currentEra }) => api.query.staking.erasStakersOverview.keys(currentEra).pipe(map((keys) => [keys, currentEra]))),
++        // Even though `erasStakersOverview` is defined it might not be populated.
++        // We check if `erasStakersOverview` storage has been populated and fallback to `erasStakers` if not.
 +        switchMap(([keys, currentEra]) => keys.length === 0 && api.query.staking.erasStakers ? api.query.staking.erasStakers.keys(currentEra) : of(keys)),
          // Dedupe any duplicates
          map((keys) => [...new Set(keys.map(({ args: [, accountId] }) => accountId.toString()))].map((a) => api.registry.createType('AccountId', a))))
          : api.query.staking.erasStakers
-             ? api.derive.session.indexes().pipe(
-             // only populate for next era in the last session, so track both here - entries are not
-             // subscriptions, so we need a trigger - currentIndex acts as that trigger to refresh
--            switchMap(({ currentEra }) => api.query.staking.erasStakers.keys(currentEra)), 
-+            switchMap(({ currentEra }) => api.query.staking.erasStakers.keys(currentEra)),
-             // Dedupe any duplicates
-             map((keys) => [...new Set(keys.map(({ args: [, accountId] }) => accountId.toString()))].map((a) => api.registry.createType('AccountId', a))))
-             : api.query.staking['currentElected']());
