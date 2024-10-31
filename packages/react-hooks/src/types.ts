@@ -6,10 +6,10 @@ import type { ApiPromise } from '@polkadot/api';
 import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { DeriveAccountFlags, DeriveAccountRegistration } from '@polkadot/api-derive/types';
 import type { DisplayedJudgement } from '@polkadot/react-components/types';
-import type { u128 } from '@polkadot/types';
-import type { AccountId, BlockNumber, Call, Exposure, Hash, RewardDestination, SessionIndex, ValidatorPrefs } from '@polkadot/types/interfaces';
-import type { PalletPreimageRequestStatus, PalletStakingStakingLedger } from '@polkadot/types/lookup';
-import type { ICompact, IExtrinsic, INumber, Registry } from '@polkadot/types/types';
+import type { Option, u32, u128, Vec } from '@polkadot/types';
+import type { AccountId, BlockNumber, Call, Hash, SessionIndex, ValidatorPrefs } from '@polkadot/types/interfaces';
+import type { PalletPreimageRequestStatus, PalletStakingRewardDestination, PalletStakingStakingLedger, PolkadotRuntimeParachainsAssignerCoretimeCoreDescriptor, SpStakingExposurePage, SpStakingPagedExposureMetadata } from '@polkadot/types/lookup';
+import type { ICompact, IExtrinsic, INumber } from '@polkadot/types/types';
 import type { KeyringJson$Meta } from '@polkadot/ui-keyring/types';
 import type { BN } from '@polkadot/util';
 import type { HexString } from '@polkadot/util/types';
@@ -19,7 +19,7 @@ export type CallParam = any;
 
 export type CallParams = [] | CallParam[];
 
-export interface CallOptions <T> {
+export interface CallOptions<T> {
   defaultValue?: T;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   paramMap?: (params: any) => CallParams;
@@ -141,8 +141,10 @@ export interface UseAccountInfo {
 
 export interface StakerState {
   controllerId: string | null;
-  destination?: RewardDestination;
-  exposure?: Exposure;
+  destination?: PalletStakingRewardDestination | null;
+  exposurePaged?: Option<SpStakingExposurePage>;
+  exposureMeta?: Option<SpStakingPagedExposureMetadata>
+  claimedRewardsEras?: Vec<u32>
   hexSessionIdNext: string | null;
   hexSessionIdQueue: string | null;
   isLoading: boolean;
@@ -188,7 +190,6 @@ export interface PreimageStatus {
   isHashParam: boolean;
   proposalHash: HexString;
   proposalLength?: BN;
-  registry: Registry;
   status: PalletPreimageRequestStatus | null;
 }
 
@@ -210,4 +211,87 @@ export interface V2WeightConstruct {
 export interface WeightResult {
   v1Weight: BN;
   v2Weight: V2WeightConstruct;
+}
+
+export interface CoreDescription {
+  core: number;
+  info: PolkadotRuntimeParachainsAssignerCoretimeCoreDescriptor[];
+}
+
+export interface OnDemandQueueStatus {
+  traffic: u128;
+  nextIndex: u32;
+  smallestIndex: u32;
+  freedIndices: [string, u32][];
+}
+
+export interface CoreWorkload {
+  core: number,
+  info: CoreWorkloadInfo
+}
+
+export interface CoreWorkloadInfo {
+  task: number | string,
+  isTask: boolean
+  isPool: boolean
+  mask: string[]
+  maskBits: number
+}
+export interface CoreWorkplan {
+  core: number;
+  info: CoreWorkplanInfo
+  timeslice: number;
+}
+
+export interface CoreWorkplanInfo {
+  task: number | string,
+  isTask: boolean
+  isPool: boolean
+  mask: string[]
+  maskBits: number
+}
+
+export interface RegionInfo {
+  core: number,
+  start: number,
+  end: number,
+  owner: string,
+  paid: string,
+  mask: `0x${string}`
+}
+
+export interface Reservation {
+  task: string
+  mask: string[],
+  maskBits: number
+}
+
+export interface LegacyLease {
+  core: number,
+  until: number,
+  task: string
+}
+
+export interface PalletBrokerSaleInfoRecord {
+  saleStart: number;
+  leadinLength: number;
+  endPrice: BN;
+  regionBegin: number;
+  regionEnd: number;
+  idealCoresSold: number;
+  coresOffered: number;
+  firstCore: number;
+  selloutPrice: BN;
+  coresSold: number;
+}
+
+export interface PalletBrokerConfigRecord {
+  advanceNotice: number;
+  interludeLength: number;
+  leadinLength: number;
+  regionLength: number;
+  idealBulkProportion: BN;
+  limitCoresOffered: number;
+  renewalBump: BN;
+  contributionTimeout: number;
 }

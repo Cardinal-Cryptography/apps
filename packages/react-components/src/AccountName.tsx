@@ -9,9 +9,10 @@ import type { AccountId, AccountIndex, Address } from '@polkadot/types/interface
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import { statics } from '@polkadot/react-api/statics';
-import { useDeriveAccountInfo, useSystemApi } from '@polkadot/react-hooks';
+import { useApi, useDeriveAccountInfo } from '@polkadot/react-hooks';
 import { AccountSidebarCtx } from '@polkadot/react-hooks/ctx/AccountSidebar';
-import { formatNumber, isCodec, isFunction, stringToU8a, u8aEmpty, u8aEq, u8aToBn } from '@polkadot/util';
+import { formatNumber, isCodec, isFunction, isU8a, stringToU8a, u8aEmpty, u8aEq, u8aToBn } from '@polkadot/util';
+import { decodeAddress } from '@polkadot/util-crypto';
 
 import { getAddressName } from './util/index.js';
 import Badge from './Badge.js';
@@ -48,13 +49,19 @@ function createNumMatcher (prefix: string, name: string, add?: string): AddrMatc
   const minLength = test.length + 4;
 
   return (addr: unknown): string | null => {
-    const u8a = isCodec(addr)
-      ? addr.toU8a()
-      : statics.registry.createType('AccountId', addr as string).toU8a();
+    try {
+      const decoded = isU8a(addr) ? addr : isCodec(addr) ? addr.toU8a() : decodeAddress(addr?.toString() || '');
+      const type = decoded.length === 20 ? 'AccountId20' : 'AccountId';
+      const u8a = statics.registry.createType(type, decoded).toU8a();
 
-    return (u8a.length >= minLength) && u8aEq(test, u8a.subarray(0, test.length)) && u8aEmpty(u8a.subarray(minLength))
-      ? `${name} ${formatNumber(u8aToBn(u8a.subarray(test.length, minLength)))}${add ? ` (${add})` : ''}`
-      : null;
+      return (u8a.length >= minLength) && u8aEq(test, u8a.subarray(0, test.length)) && u8aEmpty(u8a.subarray(minLength))
+        ? `${name} ${formatNumber(u8aToBn(u8a.subarray(test.length, minLength)))}${add ? ` (${add})` : ''}`
+        : null;
+    } catch (e) {
+      console.log(e);
+
+      return null;
+    }
   };
 }
 
@@ -69,7 +76,7 @@ const MATCHERS: AddrMatcher[] = [
   // Westend
   createNumMatcher('modlpy/nopls\x00', 'Pool', 'Stash'),
   createNumMatcher('modlpy/nopls\x01', 'Pool', 'Reward'),
-  createNumMatcher('para', 'Parachain'),
+  createNumMatcher('para', 'Child'),
   createNumMatcher('sibl', 'Sibling')
 ];
 
@@ -98,7 +105,7 @@ function defaultOrAddr (defaultName = '', _address: AccountId | AccountIndex | A
     return [defaultName, false, false, false];
   }
 
-  const [isAddressExtracted,, extracted] = getAddressName(accountId, null, defaultName);
+  const [isAddressExtracted, , extracted] = getAddressName(accountId, null, defaultName);
   const accountIndex = (_accountIndex || '').toString() || indexCache.get(accountId);
 
   if (isAddressExtracted && accountIndex) {
@@ -111,7 +118,7 @@ function defaultOrAddr (defaultName = '', _address: AccountId | AccountIndex | A
 }
 
 function defaultOrAddrNode (defaultName = '', address: AccountId | AccountIndex | Address | string | Uint8Array, accountIndex?: AccountIndex | null): React.ReactNode {
-  const [node,, isAddress] = defaultOrAddr(defaultName, address, accountIndex);
+  const [node, , isAddress] = defaultOrAddr(defaultName, address, accountIndex);
 
   return isAddress
     ? <span className='isAddress'>{node}</span>
@@ -205,7 +212,7 @@ function getDisplayedName ({ api, defaultName, info, value }: GetDisplayedNameOp
 }
 
 function AccountName ({ children, className = '', defaultName, label, onClick, override, toggle, value, withSidebar }: Props): React.ReactElement<Props> {
-  const api = useSystemApi();
+  const { apiIdentity } = useApi();
   const info = useDeriveAccountInfo(value);
   const [name, setName] = useState<React.ReactNode>(() => extractName((value || '').toString(), undefined, defaultName));
   const toggleSidebar = useContext(AccountSidebarCtx);
@@ -213,15 +220,15 @@ function AccountName ({ children, className = '', defaultName, label, onClick, o
   // set the actual nickname, local name, accountIndex, accountId
   useEffect((): void => {
     setName(
-      getDisplayedName({ api, defaultName, info, value })
+      getDisplayedName({ api: apiIdentity, defaultName, info, value })
     );
-  }, [api, defaultName, info, toggle, value]);
+  }, [apiIdentity, defaultName, info, toggle, value]);
 
   const _onNameEdit = useCallback(
     () => setName(
-      getDisplayedName({ api, defaultName, info, value })
+      getDisplayedName({ api: apiIdentity, defaultName, info, value })
     ),
-    [api, defaultName, info, value]
+    [apiIdentity, defaultName, info, value]
   );
 
   const _onToggleSidebar = useCallback(

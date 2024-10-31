@@ -15,14 +15,14 @@
     "url": "https://github.com/Cardinal-Cryptography/azero-dev.git"
   },
   "sideEffects": false,
-  "version": "0.133.2-81-x",
+  "version": "0.144.2-9-x",
   "main": "build/electron.js",
   "dependencies": {
     "electron-log": "^5.0.1",
     "electron-updater": "^6.1.7"
   },
   "devDependencies": {
-    "@polkadot/dev": "^0.78.4",
+    "@polkadot/dev": "^0.78.13",
     "@types/tmp": "^0.2.6",
     "copy-webpack-plugin": "^11.0.0",
     "electron": "28.0.0",

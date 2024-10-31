@@ -13,6 +13,7 @@ tmp/
 .yarn/*
 !.yarn/releases
 !.yarn/plugins
+!.yarn/patches
 .pnp.*
 cc-test-reporter
 package-lock.json

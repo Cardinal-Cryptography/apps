@@ -1,0 +1,27 @@
+{
+  "bugs": "https://github.com/Cardinal-Cryptography/azero-dev/issues",
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/Cardinal-Cryptography/azero-dev/tree/master/packages/page-broker#readme",
+  "license": "Apache-2.0",
+  "name": "@polkadot/app-broker",
+  "private": true,
+  "repository": {
+    "directory": "packages/page-broker",
+    "type": "git",
+    "url": "https://github.com/Cardinal-Cryptography/azero-dev.git"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "version": "0.144.2-9-x",
+  "dependencies": {
+    "@polkadot/react-components": "0.144.2-9-x",
+    "@polkadot/react-query": "0.144.2-9-x"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "react-is": "*"
+  }
+}

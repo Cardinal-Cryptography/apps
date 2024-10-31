@@ -4,7 +4,7 @@
 import type { GetDerivedStateFromProps } from 'react';
 import type { DropdownItemProps } from 'semantic-ui-react';
 import type { ApiPromise } from '@polkadot/api';
-import type { KeyringOption$Type, KeyringOptions, KeyringSectionOption, KeyringSectionOptions } from '@polkadot/ui-keyring/options/types';
+import type { KeyringOption$Type, KeyringOptions, KeyringSectionOption } from '@polkadot/ui-keyring/options/types';
 import type { Option } from './types.js';
 
 import { resolveDomainToAddress } from '@azns/resolver-core';
@@ -348,16 +348,16 @@ class InputAddress extends React.PureComponent<Props, State> {
     }
   };
 
-  private onSearch = (filteredOptions: KeyringSectionOptions, _query: string): DropdownItemProps[] => {
+  private onSearch = (filteredOptions: DropdownItemProps[], _query: string): DropdownItemProps[] => {
     const { addressToDomain, isInput = true } = this.props;
     const query = _query.trim();
     const queryLower = query.toLowerCase();
     const matches = filteredOptions.filter((item): boolean =>
-      !!item.value && (
-        (item.name.toLowerCase && item.name.toLowerCase().includes(queryLower)) ||
-        item.value.toLowerCase().includes(queryLower) ||
-        !!addressToDomain[item.value]?.toLowerCase().includes(queryLower) ||
-        !!this.state.addressToDomains[item.value]?.some((domain) => domain.toLowerCase().includes(queryLower))
+      !!item.value && typeof item.name === 'string' && (
+        (item.name.toLowerCase?.().includes(queryLower)) ||
+        item.value.toString().toLowerCase().includes(queryLower) ||
+        !!addressToDomain[item.value.toString()]?.toLowerCase().includes(queryLower) ||
+        !!this.state.addressToDomains[item.value.toString()]?.some((domain) => domain.toLowerCase().includes(queryLower))
       )
     );
 
@@ -365,11 +365,15 @@ class InputAddress extends React.PureComponent<Props, State> {
       const accountId = transformToAccountId(query);
 
       if (accountId) {
-        matches.push(
-          keyring.saveRecent(
-            accountId.toString()
-          ).option
-        );
+        const item = keyring.saveRecent(
+          accountId.toString()
+        ).option;
+
+        matches.push({
+          key: item.key,
+          name: item.name,
+          value: item.value || undefined
+        });
       }
 
       const { api, systemChain } = this.context;
@@ -408,7 +412,7 @@ class InputAddress extends React.PureComponent<Props, State> {
       const hasNext = nextItem?.value;
 
       return !(isNull(item.value) || isUndefined(item.value)) || (!isLast && !!hasNext);
-    }) as DropdownItemProps[];
+    });
   };
 }
 

@@ -34,16 +34,16 @@ export function queryAddress (address: string): void {
 
 function Validator ({ allSlashes, canSelect, filterName, info: { accountId, bondOther, bondOwn, bondTotal, commissionPer, isBlocking, isElected, isFavorite, key, lastPayout, numNominators, rankOverall, stakedReturnCmp }, isNominated, isSelected, nominatedBy = [], toggleFavorite, toggleSelected }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
-  const { api } = useApi();
+  const { api, apiIdentity } = useApi();
   const accountInfo = useDeriveAccountInfo(accountId);
   const [,, time] = useBlockTime(lastPayout);
   const { primaryDomain: domain } = useAddressToDomain(accountId.toString());
 
   const isVisible = useMemo(
     () => accountInfo
-      ? checkVisibility(api, key, { ...accountInfo, domain }, filterName)
+      ? checkVisibility(apiIdentity, key, { ...accountInfo, domain }, filterName)
       : true,
-    [accountInfo, api, domain, filterName, key]
+    [accountInfo, apiIdentity, domain, filterName, key]
   );
 
   const slashes = useMemo(

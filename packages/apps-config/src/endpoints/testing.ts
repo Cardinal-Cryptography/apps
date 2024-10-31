@@ -14,6 +14,7 @@ import { chainsAlephSVG } from '../ui/logos/chains/index.js';
 // IMPORTANT: Alphabetical based on text
 export const testChains: Omit<EndpointOption, 'teleport'>[] = [{
   info: 'aleph-testnet',
+  isPeopleForIdentity: false,
   providers: {
     'Aleph Zero Foundation': 'wss://ws.test.azero.dev'
   },

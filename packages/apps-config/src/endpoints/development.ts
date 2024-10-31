@@ -18,6 +18,7 @@ export function createOwn (t: TFunction): LinkOption[] {
 
       return items.map((textBy) => ({
         info: 'local',
+        isPeopleForIdentity: false,
         text: t('rpc.dev.custom.own', 'Custom', { ns: 'apps-config' }),
         textBy,
         ui: {},
@@ -36,6 +37,7 @@ export function createDev (t: TFunction): LinkOption[] {
     {
       dnslink: 'local',
       info: 'local',
+      isPeopleForIdentity: false,
       text: t('rpc.dev.local', 'Local Node', { ns: 'apps-config' }),
       textBy: '127.0.0.1:9944',
       ui: {},
@@ -44,6 +46,7 @@ export function createDev (t: TFunction): LinkOption[] {
     {
       dnslink: 'local',
       info: 'local',
+      isPeopleForIdentity: false,
       text: t('rpc.dev.azero.dev', 'Aleph Zero Devnet', { ns: 'apps-config' }),
       textBy: 'ws.dev.azero.dev',
       ui: {},

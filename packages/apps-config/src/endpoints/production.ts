@@ -14,6 +14,7 @@ import { chainsAlephSVG } from '../ui/logos/chains/index.js';
 // IMPORTANT: Alphabetical based on text
 export const prodChains: Omit<EndpointOption, 'teleport'>[] = [{
   info: 'aleph',
+  isPeopleForIdentity: false,
   providers: {
     'Aleph Zero Foundation': 'wss://ws.azero.dev'
   },

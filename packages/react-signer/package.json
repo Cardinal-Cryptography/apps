@@ -14,10 +14,11 @@
   },
   "sideEffects": false,
   "type": "module",
-  "version": "0.133.2-81-x",
+  "version": "0.144.2-9-x",
   "dependencies": {
-    "@polkadot/hw-ledger": "^12.6.2",
-    "@polkadot/react-components": "^0.133.2-81-x",
+    "@polkadot-api/merkleize-metadata": "^1.1.4",
+    "@polkadot/hw-ledger": "^13.1.1",
+    "@polkadot/react-components": "^0.144.2-9-x",
     "azero-wallet-adapter": "^0.3.1"
   },
   "peerDependencies": {

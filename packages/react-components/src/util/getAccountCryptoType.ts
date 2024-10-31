@@ -23,7 +23,9 @@ export function getAccountCryptoType (accountId: AccountIdIsh): string {
                 ? 'proxied'
                 : current.meta.isSnap
                   ? 'snap'
-                  : 'qr'
+                  : current.meta.isLocal
+                    ? 'chopsticks'
+                    : 'qr'
             : current.type;
     }
   } catch {

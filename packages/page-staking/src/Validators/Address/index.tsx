@@ -40,19 +40,19 @@ interface StakingState {
   stakeOwn?: BN;
 }
 
-function expandInfo ({ exposure, validatorPrefs }: ValidatorInfo): StakingState {
-  let nominators: NominatorValue[] = [];
+function expandInfo ({ exposureMeta, nominators, validatorPrefs }: ValidatorInfo): StakingState {
+  let nominatorsParsed: NominatorValue[] | undefined;
   let stakeTotal: BN | undefined;
   let stakeOther: BN | undefined;
   let stakeOwn: BN | undefined;
 
-  if (exposure?.total) {
-    nominators = exposure.others.map(({ value, who }) => ({
+  if (exposureMeta?.total) {
+    nominatorsParsed = nominators.map(({ value, who }) => ({
       nominatorId: who.toString(),
       value: value.unwrap()
     }));
-    stakeTotal = exposure.total?.unwrap() || BN_ZERO;
-    stakeOwn = exposure.own.unwrap();
+    stakeTotal = exposureMeta.total?.unwrap() || BN_ZERO;
+    stakeOwn = exposureMeta.own.unwrap();
     stakeOther = stakeTotal.sub(stakeOwn);
   }
 
@@ -60,7 +60,7 @@ function expandInfo ({ exposure, validatorPrefs }: ValidatorInfo): StakingState 
 
   return {
     commission: commission?.toHuman(),
-    nominators,
+    nominators: nominatorsParsed,
     stakeOther,
     stakeOwn,
     stakeTotal
@@ -81,7 +81,7 @@ function useAddressCalls (api: ApiPromise, address: string) {
 
 function Address ({ address, className = '', filterName, hasQueries, isFavorite, nominatedBy, toggleFavorite, validatorInfo, withIdentity }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
-  const { api } = useApi();
+  const { api, apiIdentity } = useApi();
   const [isExpanded, toggleIsExpanded] = useToggle(false);
   const { accountInfo, slashingSpans } = useAddressCalls(api, address);
   const { primaryDomain: domain } = useAddressToDomain(address);
@@ -94,8 +94,8 @@ function Address ({ address, className = '', filterName, hasQueries, isFavorite,
   );
 
   const isVisible = useMemo(
-    () => accountInfo ? checkVisibility(api, address, { ...accountInfo, domain }, filterName, withIdentity) : true,
-    [api, accountInfo, address, domain, filterName, withIdentity]
+    () => accountInfo ? checkVisibility(apiIdentity, address, { ...accountInfo, domain }, filterName, withIdentity) : true,
+    [accountInfo, address, domain, filterName, apiIdentity, withIdentity]
   );
 
   const statsLink = useMemo(
