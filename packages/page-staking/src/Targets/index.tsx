@@ -21,6 +21,7 @@ import Nominate from './Nominate.js';
 import Summary from './Summary.js';
 import useOwnNominators from './useOwnNominators.js';
 import Validator from './Validator.js';
+import NominationsBanner from "../NominationsBanner.js";
 
 interface Props {
   className?: string;
@@ -255,6 +256,7 @@ function Targets ({ className = '', isInElection, nominatedBy, ownStashes, targe
         totalIssuance={totalIssuance}
         totalStaked={totalStaked}
       />
+      <NominationsBanner />
       <Button.Group>
         <Button
           icon='check'
