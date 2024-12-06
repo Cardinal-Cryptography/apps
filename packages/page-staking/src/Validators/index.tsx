@@ -7,14 +7,14 @@ import type { NominatedByMap, SortedTargets } from '../types.js';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import {Button, ToggleGroup} from '@polkadot/react-components';
+import { Button, ToggleGroup } from '@polkadot/react-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
 
+import NominationsBanner from '../NominationsBanner.js';
 import { useTranslation } from '../translate.js';
 import ActionsBanner from './ActionsBanner.js';
 import CurrentList from './CurrentList.js';
 import Summary from './Summary.js';
-import NominationsBanner from "../NominationsBanner.js";
 
 interface Props {
   className?: string;

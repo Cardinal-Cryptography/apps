@@ -15,13 +15,13 @@ import { useApi, useAvailableSlashes, useSavedFlags } from '@polkadot/react-hook
 import { MAX_NOMINATIONS } from '../constants.js';
 import ElectionBanner from '../ElectionBanner.js';
 import Filtering from '../Filtering.js';
+import NominationsBanner from '../NominationsBanner.js';
 import { useTranslation } from '../translate.js';
 import useIdentities from '../useIdentities.js';
 import Nominate from './Nominate.js';
 import Summary from './Summary.js';
 import useOwnNominators from './useOwnNominators.js';
 import Validator from './Validator.js';
-import NominationsBanner from "../NominationsBanner.js";
 
 interface Props {
   className?: string;

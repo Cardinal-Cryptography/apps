@@ -6,6 +6,7 @@ import React from 'react';
 import { MarkWarning } from '@polkadot/react-components';
 
 import { useTranslation } from './translate.js';
+
 function ElectionBanner (): React.ReactElement<null> | null {
   const { t } = useTranslation();
 
