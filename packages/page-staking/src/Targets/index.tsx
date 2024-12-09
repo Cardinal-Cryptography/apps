@@ -15,6 +15,7 @@ import { useApi, useAvailableSlashes, useSavedFlags } from '@polkadot/react-hook
 import { MAX_NOMINATIONS } from '../constants.js';
 import ElectionBanner from '../ElectionBanner.js';
 import Filtering from '../Filtering.js';
+import NominationsBanner from '../NominationsBanner.js';
 import { useTranslation } from '../translate.js';
 import useIdentities from '../useIdentities.js';
 import Nominate from './Nominate.js';
@@ -255,6 +256,7 @@ function Targets ({ className = '', isInElection, nominatedBy, ownStashes, targe
         totalIssuance={totalIssuance}
         totalStaked={totalStaked}
       />
+      <NominationsBanner />
       <Button.Group>
         <Button
           icon='check'

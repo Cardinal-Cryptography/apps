@@ -10,6 +10,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, ToggleGroup } from '@polkadot/react-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
 
+import NominationsBanner from '../NominationsBanner.js';
 import { useTranslation } from '../translate.js';
 import ActionsBanner from './ActionsBanner.js';
 import CurrentList from './CurrentList.js';
@@ -63,6 +64,7 @@ function Overview ({ className = '', favorites, hasAccounts, hasQueries, nominat
       {hasAccounts && (ownStashes?.length === 0) && (
         <ActionsBanner />
       )}
+      <NominationsBanner />
       <Button.Group>
         <ToggleGroup
           onChange={setTypeIndex}
