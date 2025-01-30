@@ -90,10 +90,21 @@ index 5d74f9b00630b7cbfe1fbab5cf584b18465be262..6261b5b397528ca376c6b60fbd4c28e5
          (0, rxjs_1.map)((keys) => [...new Set(keys.map(({ args: [, accountId] }) => accountId.toString()))].map((a) => api.registry.createType('AccountId', a))))
          : api.query.staking.erasStakers
 diff --git a/staking/query.js b/staking/query.js
-index f9448e7b554df170c96971eccbe0c3c94f0fd695..e01c0ad9cf72e9d082c3de610d03c0732bbfda06 100644
+index f9448e7b554df170c96971eccbe0c3c94f0fd695..0dc18f0762732dc8f27a94f54dea577ee147486d 100644
 --- a/staking/query.js
 +++ b/staking/query.js
-@@ -50,11 +50,17 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
+@@ -37,6 +37,10 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
+                 overviewData[id] = new Map();
+                 overviewData[id].set(era, overview.unwrap().pageCount);
+             }
++            const { own, pageCount } = overview.unwrap();
++            if (pageCount.eqn(0) && own.toBn().gtn(0)) {
++                overviewData[id].set(era, pageCount.addn(1));
++            }
+         }
+     });
+     return stashIds.map((id) => {
+@@ -50,11 +54,17 @@ function filterRewards(stashIds, eras, claimedRewards, stakersOverview) {
                      ? era
                      : -1;
              }
@@ -112,7 +123,7 @@ index f9448e7b554df170c96971eccbe0c3c94f0fd695..e01c0ad9cf72e9d082c3de610d03c073
      return {
          accountId: stashId,
          claimedRewardsEras: filterClaimedRewards(api, claimedRewards),
-@@ -68,8 +74,11 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
+@@ -68,8 +78,11 @@ function parseDetails(api, stashId, controllerIdOpt, nominatorsOpt, rewardDestin
          rewardDestination: rewardDestinationCompat(rewardDestinationOpts),
          stakingLedger: stakingLedgerOpt.unwrapOrDefault(),
          stashId,
@@ -126,7 +137,7 @@ index f9448e7b554df170c96971eccbe0c3c94f0fd695..e01c0ad9cf72e9d082c3de610d03c073
  }
  function getLedgers(api, optIds, { withLedger = false }) {
      const ids = optIds
-@@ -129,11 +138,28 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
+@@ -129,11 +142,28 @@ function getStashInfo(api, stashIds, activeEra, { withClaimedRewardsEras, withCo
              : of(stashIds.map(() => emptyClaimedRewards)),
          withExposureErasStakersLegacy && api.query.staking.erasStakers
              ? combineLatest(stashIds.map((s) => api.query.staking.erasStakers(activeEra, s)))
