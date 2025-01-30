@@ -1404,7 +1404,7 @@ __metadata:
 
 "@polkadot/api-derive@patch:@polkadot/api-derive@npm%3A13.2.1#~/.yarn/patches/@polkadot-api-derive-npm-13.2.1-19d2cc1087.patch":
   version: 13.2.1
-  resolution: "@polkadot/api-derive@patch:@polkadot/api-derive@npm%3A13.2.1#~/.yarn/patches/@polkadot-api-derive-npm-13.2.1-19d2cc1087.patch::version=13.2.1&hash=ed990c"
+  resolution: "@polkadot/api-derive@patch:@polkadot/api-derive@npm%3A13.2.1#~/.yarn/patches/@polkadot-api-derive-npm-13.2.1-19d2cc1087.patch::version=13.2.1&hash=1c207a"
   dependencies:
     "@polkadot/api": "npm:13.2.1"
     "@polkadot/api-augment": "npm:13.2.1"
@@ -1416,7 +1416,7 @@ __metadata:
     "@polkadot/util-crypto": "npm:^13.1.1"
     rxjs: "npm:^7.8.1"
     tslib: "npm:^2.7.0"
-  checksum: 10/58e03e2123eb9c426e5d831bac40be105c2cd0e9370406df12f030a47bcb33b038d07d7a48c50ba612636236fa6f0c30e58464aa5abc76d44daa2a67f8384fbe
+  checksum: 10/76d55034fd41eba3bcbc316138302ed1f6c154b47a468f3fa602632cd72ea36e927d2ade57b81b4c8187a27e07141dfb6edda4d0ab4014021966b4993306bf8d
   languageName: node
   linkType: hard
 
