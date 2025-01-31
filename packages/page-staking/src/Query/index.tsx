@@ -9,7 +9,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
-import { Button, CardSummary, InputAddressSimple, Spinner, SummaryBox, Table, ToggleGroup } from '@polkadot/react-components';
+import { Button, CardSummary, InputAddressSimple, Spinner, styled, SummaryBox, Table, ToggleGroup } from '@polkadot/react-components';
 import { useApi, useCall, useLenientThresholdPercentage, useNextTick } from '@polkadot/react-hooks';
 
 import Address from '../Performance/Address/index.js';
@@ -170,9 +170,8 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           onClick={_onQuery}
         />
       </InputAddressSimple>
-      {/* TODO: this is not displayed very well in UI, add some style*/}
       {value && !!isAlephChain &&
-        <ToggleGroup
+        <StyledToggleGroup
           onChange={setGroupIndex}
           options={groups}
           value={groupIndex}
@@ -240,3 +239,9 @@ function Query ({ className }: Props): React.ReactElement<Props> {
 }
 
 export default React.memo(Query);
+
+const StyledToggleGroup = styled(ToggleGroup)`
+  display: block;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+`;
