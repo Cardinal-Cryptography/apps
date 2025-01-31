@@ -14,9 +14,9 @@ import { useApi, useCall, useLenientThresholdPercentage, useNextTick } from '@po
 import Address from '../Performance/Address/index.js';
 import { calculatePercentReward } from '../Performance/BlockProductionCommitteeList.js';
 import useSessionCommitteePerformance from '../Performance/useCommitteePerformance.js';
-import useCurrentSessionInfo from '../Performance/useCurrentSessionInfo.js';
 import { useTranslation } from '../translate.js';
 import Validator from './Validator.js';
+import useSessionInfo from "../Performance/useSessionInfo.js";
 
 interface Props {
   className?: string;
@@ -39,7 +39,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
   );
   const lenientThresholdPercentage = useLenientThresholdPercentage();
 
-  const [currentSession, currentEra, historyDepth, minimumSessionNumber] = useCurrentSessionInfo();
+  const sessionInfo = useSessionInfo();
   const isNextTick = useNextTick();
 
   function range (size: number, startAt = 0) {
@@ -52,17 +52,17 @@ function Query ({ className }: Props): React.ReactElement<Props> {
   );
 
   const pastSessions = useMemo(() => {
-    if (currentSession && currentEra && historyDepth && minimumSessionNumber) {
-      const maxSessionQueryDepth = 4 * historyDepth;
+    if (sessionInfo) {
+      const maxSessionQueryDepth = 4 * sessionInfo.historyDepth;
 
-      const minSessionNumber = Math.max(minimumSessionNumber, currentSession - maxSessionQueryDepth);
-      const queryDepth = currentSession - minSessionNumber;
+      const minSessionNumber = Math.max(sessionInfo.minimumSessionNumber, sessionInfo.currentSession - maxSessionQueryDepth);
+      const queryDepth = sessionInfo.currentSession - minSessionNumber;
 
-      return range(queryDepth, currentSession - queryDepth).reverse();
+      return range(queryDepth, sessionInfo.currentSession - queryDepth).reverse();
     }
 
     return [];
-  }, [currentSession, currentEra, historyDepth, minimumSessionNumber]
+  }, [sessionInfo]
   );
 
   const sessionCommitteePerformance = useSessionCommitteePerformance(pastSessions);

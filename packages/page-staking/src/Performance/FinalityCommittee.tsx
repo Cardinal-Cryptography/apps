@@ -10,11 +10,12 @@ import { useFinalityCommittee } from './useFinalityCommittee.js';
 
 interface Props {
   session: number;
+  currentSession: number;
 }
 
-function FinalityCommittee ({ session }: Props) {
+function FinalityCommittee ({ session, currentSession }: Props) {
   const { t } = useTranslation();
-  const finalityCommitteeAddresses = useFinalityCommittee(session);
+  const finalityCommitteeAddresses = useFinalityCommittee(session, currentSession);
 
   const messageOnEmpty = finalityCommitteeAddresses && t("Data isn't available.");
 

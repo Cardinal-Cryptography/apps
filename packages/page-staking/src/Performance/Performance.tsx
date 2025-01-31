@@ -18,7 +18,6 @@ import Summary from './Summary.js';
 import { parseSessionBlockCount } from './useCommitteePerformance.js';
 
 interface Props {
-  session: number,
   era: number,
 }
 

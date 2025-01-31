@@ -8,9 +8,9 @@ import React, { useRef, useState } from 'react';
 import { Table, Toggle } from '@polkadot/react-components';
 
 import Filtering from '../Filtering.js';
-import useCurrentSessionInfo from '../Performance/useCurrentSessionInfo.js';
 import { useTranslation } from '../translate.js';
 import Address from './Address/index.js';
+import useSessionInfo from "../Performance/useSessionInfo.js";
 
 interface Props {
   suspensions: SuspensionEvent[] | undefined,
@@ -20,7 +20,7 @@ function CurrentList ({ suspensions }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const [nameFilter, setNameFilter] = useState<string>('');
   const [activeOnly, setActiveOnly] = useState(true);
-  const [, currentEra] = useCurrentSessionInfo();
+  const sessionInfo = useSessionInfo();
 
   const headerRef = useRef<[string, string, number?][]>(
     [
@@ -50,7 +50,7 @@ function CurrentList ({ suspensions }: Props): React.ReactElement<Props> {
   const filteredSuspensions = suspensions?.filter(
     ({ address, suspensionLiftsInEra }) =>
       !excludedReservedValidators.find((value) => value === address) &&
-      (!activeOnly || currentEra === undefined || suspensionLiftsInEra >= currentEra)
+      (!activeOnly || sessionInfo === undefined || suspensionLiftsInEra >= sessionInfo.currentEra)
   );
 
   return (

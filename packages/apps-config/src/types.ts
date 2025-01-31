@@ -4,6 +4,7 @@
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
 import type { Perbill } from '@polkadot/types/interfaces/runtime';
 import type { Observable } from '@polkadot/types/types';
+import {u32, Vec} from "@polkadot/types";
 
 declare module '@polkadot/api-base/types/calls' {
   interface AugmentedCalls<ApiType extends ApiTypes> {
@@ -13,6 +14,10 @@ declare module '@polkadot/api-base/types/calls' {
        * The API to query account nonce (aka transaction index)
        **/
       yearlyInflation?: AugmentedCall<ApiType, () => Observable<Perbill>>;
+      /**
+      Predict finality and block production committee
+       **/
+      predictSessionCommittee?: AugmentedCall<ApiType, (session: u32) => Observable<String>>;
       /**
        * Generic call
        **/

@@ -35,11 +35,13 @@ function Summary (
             {formatNumber(committeeLength || 0)}
           </span>
         </CardSummary>
-        <CardSummary label={t('expected block count')}>
-          <span className={expectedBlockCount ? '' : '--tmp'}>
-            {formatNumber(expectedBlockCount || 0)}
-          </span>
-        </CardSummary>
+        {expectedBlockCount !== undefined &&
+            <CardSummary label={t('expected block count')}>
+            <span className={expectedBlockCount ? '' : '--tmp'}>
+              {formatNumber(expectedBlockCount || 0)}
+            </span>
+            </CardSummary>
+        }
       </section>
     </SummaryBox>
   );

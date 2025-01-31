@@ -11,16 +11,18 @@ import { useApi } from '@polkadot/react-hooks';
 
 import { getApiAtBlock, getBlocksImportantForSession } from './utils.js';
 
-export const useFinalityCommittee = (session: number): string[] | undefined => {
+export const useFinalityCommittee = (session: number, currentSession: number): string[] | undefined => {
   const { api } = useApi();
 
   const [committee, setCommittee] = useState<string[]>();
 
   useEffect(() => {
-    getFinalityCommittee(session, api)
-      .then(setCommittee)
-      .catch(console.error);
-  }, [api, session]);
+    if (session <= currentSession) {
+      getFinalityCommittee(session, api)
+          .then(setCommittee)
+          .catch(console.error);
+    }
+  }, [api, session, currentSession]);
 
   return committee;
 };
