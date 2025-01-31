@@ -8,6 +8,7 @@ import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManageme
 
 export const getBlocksImportantForSession = (session: number, api: ApiPromise) => {
   const blocksInSession = (getCommitteeManagement(api).consts.sessionPeriod as u32).toNumber();
+
   // AlephBFT and Aura sessions are off by one block, hence the difference.
   return {
     firstBlockOfSelectedAuraSession: session * blocksInSession + 1,

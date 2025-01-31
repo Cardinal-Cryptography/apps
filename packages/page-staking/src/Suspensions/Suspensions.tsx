@@ -67,8 +67,8 @@ function useSuspensions (): SuspensionEvent[] | undefined {
 
   const erasElectionsSessionIndexLookup = useMemo((): [number, number][] => {
     return erasStartSessionIndexLookup
-      .filter(([, firstSession]) => firstSession > 0)
-      .map(([era, firstSession]) => [era, firstSession - 1]);
+      .filter(({ firstSession }) => firstSession > 0)
+      .map(({ era, firstSession }) => [era, firstSession - 1]);
   },
   [erasStartSessionIndexLookup]
   );

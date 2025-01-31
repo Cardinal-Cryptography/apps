@@ -1,15 +1,16 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, {useMemo} from 'react';
+import type { EraValidatorPerformance } from './Performance.js';
 
-import {styled} from '@polkadot/react-components';
+import React, { useMemo } from 'react';
+
+import { styled } from '@polkadot/react-components';
 
 import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
-import useFutureSessionCommittee from "./useFutureSessionCommittee.js";
-import {EraValidatorPerformance} from "./Performance.js";
+import useFutureSessionCommittee from './useFutureSessionCommittee.js';
 
 interface Props {
   session: number,
@@ -19,22 +20,22 @@ function FutureBlockProductionCommitee ({ session }: Props): React.ReactElement<
   const futureSessionCommittee = useFutureSessionCommittee([session]);
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
-      if (futureSessionCommittee && futureSessionCommittee.length > 0 && futureSessionCommittee[0]) {
-        return futureSessionCommittee[0].blockProducers.map((account) => {
-            return {
-              isCommittee: true,
-              validatorPerformance: {
-                accountId: account,
-                blockCount: 0,
-              }
-            };
+    if (futureSessionCommittee && futureSessionCommittee.length > 0 && futureSessionCommittee[0]) {
+      return futureSessionCommittee[0].blockProducers.map((account) => {
+        return {
+          isCommittee: true,
+          validatorPerformance: {
+            accountId: account,
+            blockCount: 0
           }
-        );
+        };
       }
+      );
+    }
 
-      return [];
-    },
-    [futureSessionCommittee]
+    return [];
+  },
+  [futureSessionCommittee]
 
   );
 

@@ -14,9 +14,9 @@ import { useApi, useCall, useLenientThresholdPercentage, useNextTick } from '@po
 import Address from '../Performance/Address/index.js';
 import { calculatePercentReward } from '../Performance/BlockProductionCommitteeList.js';
 import useSessionCommitteePerformance from '../Performance/useCommitteePerformance.js';
+import useSessionInfo from '../Performance/useSessionInfo.js';
 import { useTranslation } from '../translate.js';
 import Validator from './Validator.js';
-import useSessionInfo from "../Performance/useSessionInfo.js";
 
 interface Props {
   className?: string;

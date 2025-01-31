@@ -1,6 +1,8 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import type { EraValidatorPerformance } from './Performance.js';
+
 import React, { useMemo, useState } from 'react';
 
 import { styled } from '@polkadot/react-components';
@@ -9,11 +11,11 @@ import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
 import useSessionCommitteePerformance from './useCommitteePerformance.js';
-import {EraValidatorPerformance} from "./Performance.js";
 
 interface Props {
   session: number,
 }
+
 function HistoricPerformance ({ session }: Props): React.ReactElement<Props> {
   const sessionCommitteePerformance = useSessionCommitteePerformance([session]);
   const [expectedBlockCountInSessions, setExpectedBlockCountInSessions] = useState<number | undefined>(undefined);

@@ -1,14 +1,15 @@
 // Copyright 2017-2025 @polkadot/app-explorer authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, {useMemo} from 'react';
+import type { PerformanceTabMode } from './index.js';
+
+import React, { useMemo } from 'react';
 
 import { CardSummary } from '@polkadot/react-components';
 import { formatNumber } from '@polkadot/util';
 
 import { useTranslation } from '../translate.js';
-import {PerformanceTabMode} from "./index.js";
-import useEraSessionBoundaries from "./useEraSessionBoundaries.js";
+import useEraSessionBoundaries from './useEraSessionBoundaries.js';
 
 interface Props {
   className?: string;
@@ -16,7 +17,7 @@ interface Props {
   performanceTabMode: PerformanceTabMode;
 }
 
-function SummarySession ({ className, session, performanceTabMode }: Props): React.ReactElement<Props> {
+function SummarySession ({ className, performanceTabMode, session }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
 
   const eraSessionBoundaries = useEraSessionBoundaries(session);
@@ -25,16 +26,15 @@ function SummarySession ({ className, session, performanceTabMode }: Props): Rea
     if (eraSessionBoundaries) {
       return eraSessionBoundaries.era;
     }
+
     return undefined;
   }, [eraSessionBoundaries]);
-
 
   const sessionLabel: string[] = [
     'past session',
     'current session',
-    'future session',
+    'future session'
   ];
-
 
   return (
     <>

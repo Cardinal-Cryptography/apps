@@ -18,8 +18,8 @@ export const useEraValidators = (session: number, currentSession: number): strin
   useEffect(() => {
     if (session <= currentSession) {
       getEraValidators(session, api)
-          .then(setValidators)
-          .catch(console.error);
+        .then(setValidators)
+        .catch(console.error);
     }
   }, [api, session, currentSession]);
 

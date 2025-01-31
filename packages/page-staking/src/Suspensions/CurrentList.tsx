@@ -8,9 +8,9 @@ import React, { useRef, useState } from 'react';
 import { Table, Toggle } from '@polkadot/react-components';
 
 import Filtering from '../Filtering.js';
+import useSessionInfo from '../Performance/useSessionInfo.js';
 import { useTranslation } from '../translate.js';
 import Address from './Address/index.js';
-import useSessionInfo from "../Performance/useSessionInfo.js";
 
 interface Props {
   suspensions: SuspensionEvent[] | undefined,

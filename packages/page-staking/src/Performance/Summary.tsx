@@ -37,9 +37,9 @@ function Summary (
         </CardSummary>
         {expectedBlockCount !== undefined &&
             <CardSummary label={t('expected block count')}>
-            <span className={expectedBlockCount ? '' : '--tmp'}>
-              {formatNumber(expectedBlockCount || 0)}
-            </span>
+              <span className={expectedBlockCount ? '' : '--tmp'}>
+                {formatNumber(expectedBlockCount || 0)}
+              </span>
             </CardSummary>
         }
       </section>

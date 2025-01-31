@@ -13,7 +13,7 @@ interface Props {
   currentSession: number;
 }
 
-function FinalityCommittee ({ session, currentSession }: Props) {
+function FinalityCommittee ({ currentSession, session }: Props) {
   const { t } = useTranslation();
   const finalityCommitteeAddresses = useFinalityCommittee(session, currentSession);
 

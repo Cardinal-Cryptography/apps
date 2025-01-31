@@ -1,7 +1,8 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type {u32} from '@polkadot/types';
+import type { u32 } from '@polkadot/types';
+
 import { useEffect, useState } from 'react';
 
 import { createNamedHook, useApi } from '@polkadot/react-hooks';
@@ -11,17 +12,23 @@ export interface FutureCommittee {
   finalityCommittee: string[];
 }
 
+interface PredictSessionCommitteeResult {
+  ok: FutureCommittee;
+}
+
 function useFutureSessionCommitteeImpl (sessions: number[]): (FutureCommittee | undefined)[] {
   const { api } = useApi();
 
   const [committees, setCommittees] = useState<(FutureCommittee | undefined)[]>([]);
 
   useEffect(() => {
-    let predictSessionCommittee = api.call?.alephSessionApi?.predictSessionCommittee;
+    const predictSessionCommittee = api.call?.alephSessionApi?.predictSessionCommittee;
+
     if (!predictSessionCommittee) {
       console.error('api.call.alephSessionApi.predictSessionCommittee is undefined!');
     }
-    let predictCommitteePromises = sessions.map((session) => predictSessionCommittee?.(session as unknown as u32));
+
+    const predictCommitteePromises = sessions.map((session) => predictSessionCommittee?.(session as unknown as u32));
 
     Promise.all(predictCommitteePromises).then((futureCommitteesEncoded) => {
       setCommittees(
@@ -29,30 +36,34 @@ function useFutureSessionCommitteeImpl (sessions: number[]): (FutureCommittee | 
           if (!futureCommittee) {
             return undefined;
           }
-          let predictSessionCommitteeOutput = futureCommittee.toString();
+
+          const predictSessionCommitteeOutput = futureCommittee.toString();
+
           try {
-            let json = JSON.parse(futureCommittee.toString());
-            if (json.ok == undefined) {
-              console.error("Unexpected predictSessionCommittee output format! Got: ", json)
+            const json = JSON.parse(futureCommittee.toString()) as PredictSessionCommitteeResult;
+
+            if (json.ok === undefined) {
+              console.error('Unexpected predictSessionCommittee output format! Got: ', json);
             } else {
-              const futureCommittee = json.ok as FutureCommittee;
-              return futureCommittee;
+              return json.ok;
             }
           } catch (parsingError) {
-            console.error("Failed to parse predictSessionCommittee output: ",
+            console.error('Failed to parse predictSessionCommittee output: ',
               predictSessionCommitteeOutput,
-              ", detailed error: ",
+              ', detailed error: ',
               parsingError);
           }
+
           return undefined;
         }));
-      });
+    }).catch(console.error);
   },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [api, JSON.stringify(sessions)]
   );
 
   console.log(committees);
+
   return committees;
 }
 

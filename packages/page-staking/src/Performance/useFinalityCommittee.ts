@@ -19,8 +19,8 @@ export const useFinalityCommittee = (session: number, currentSession: number): s
   useEffect(() => {
     if (session <= currentSession) {
       getFinalityCommittee(session, api)
-          .then(setCommittee)
-          .catch(console.error);
+        .then(setCommittee)
+        .catch(console.error);
     }
   }, [api, session, currentSession]);
 

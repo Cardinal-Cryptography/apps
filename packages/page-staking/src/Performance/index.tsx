@@ -1,7 +1,7 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { MarkWarning, Spinner, SummaryBox, ToggleGroup } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
@@ -10,17 +10,18 @@ import { useTranslation } from '../translate.js';
 import ActionsRow from './ActionsRow.js';
 import EraValidators from './EraValidators.js';
 import FinalityCommittee from './FinalityCommittee.js';
+import FutureBlockProductionCommitee from './FutureBlockProductionCommitee.js';
+import HistoricPerformance from './HistoricPerformance.js';
 import Performance from './Performance.js';
 import SummarySession from './SummarySession.js';
-import useSessionInfo from "./useSessionInfo.js";
-import HistoricPerformance from "./HistoricPerformance.js";
-import FutureBlockProductionCommitee from "./FutureBlockProductionCommitee.js";
+import useSessionInfo from './useSessionInfo.js';
 
 export enum PerformanceTabMode {
   Past = 1,
   Current = 2,
   Future= 3,
 }
+
 function PerformancePage (): React.ReactElement {
   const { api } = useApi();
   const { t } = useTranslation();
@@ -48,7 +49,7 @@ function PerformancePage (): React.ReactElement {
       } else if (inputSession > sessionInfo.currentSession) {
         setPerformanceTabMode(PerformanceTabMode.Future);
         setGroupIndex(1);
-      } else if (inputSession == sessionInfo.currentSession) {
+      } else if (inputSession === sessionInfo.currentSession) {
         setPerformanceTabMode(PerformanceTabMode.Current);
       }
     }
@@ -61,9 +62,10 @@ function PerformancePage (): React.ReactElement {
   }
 
   console.log(performanceTabMode, sessionInfo, inputSession);
-  if (performanceTabMode === undefined
-      || sessionInfo === undefined
-      || inputSession === undefined) {
+
+  if (performanceTabMode === undefined ||
+      sessionInfo === undefined ||
+      inputSession === undefined) {
     return (
       <Spinner label={'loading data'} />
     );
@@ -75,23 +77,23 @@ function PerformancePage (): React.ReactElement {
         <SummaryBox>
           <section>
             <SummarySession
-              session={inputSession}
               performanceTabMode={performanceTabMode}
+              session={inputSession}
             />
           </section>
         </SummaryBox>
       </section>
       <section className='performance--actionsrow'>
         <ActionsRow
-          minimumSessionNumber={sessionInfo.minimumSessionNumber}
           maximumSessionNumber={sessionInfo.maximumSessionNumber}
+          minimumSessionNumber={sessionInfo.minimumSessionNumber}
           onSessionChange={setInputSession}
           selectedSession={inputSession}
         />
       </section>
       <section>
         <>
-        {performanceTabMode != PerformanceTabMode.Future &&
+          {performanceTabMode !== PerformanceTabMode.Future &&
           <ToggleGroup
             onChange={setGroupIndex}
             options={groups}
@@ -102,13 +104,13 @@ function PerformancePage (): React.ReactElement {
       <section>
         {groupIndex === 0 &&
           <EraValidators
-            session={inputSession}
             currentSession={sessionInfo.currentSession}
+            session={inputSession}
           />
         }
         {groupIndex === 1 &&
           <>
-            {performanceTabMode == PerformanceTabMode.Current &&
+            {performanceTabMode === PerformanceTabMode.Current &&
               (<Performance
                 era={sessionInfo.currentEra}
               />)
@@ -117,7 +119,7 @@ function PerformancePage (): React.ReactElement {
         }
         {groupIndex === 1 &&
           <>
-            {performanceTabMode == PerformanceTabMode.Past &&
+            {performanceTabMode === PerformanceTabMode.Past &&
               (<HistoricPerformance
                 session={inputSession}
               />)
@@ -126,7 +128,7 @@ function PerformancePage (): React.ReactElement {
         }
         {groupIndex === 1 &&
             <>
-              {performanceTabMode == PerformanceTabMode.Future &&
+              {performanceTabMode === PerformanceTabMode.Future &&
                 (<FutureBlockProductionCommitee
                   session={inputSession}
                 />)
@@ -135,8 +137,8 @@ function PerformancePage (): React.ReactElement {
         }
         {groupIndex === 2 &&
           <FinalityCommittee
-              session={inputSession}
-              currentSession={sessionInfo.currentSession}
+            currentSession={sessionInfo.currentSession}
+            session={inputSession}
           />
         }
       </section>

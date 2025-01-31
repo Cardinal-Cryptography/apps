@@ -1,9 +1,9 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Dispatch, SetStateAction, useEffect} from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button, Input } from '@polkadot/react-components';
 
@@ -16,17 +16,17 @@ interface Props {
   onSessionChange: Dispatch<SetStateAction<number | undefined>>;
 }
 
-function ActionsRow ({ minimumSessionNumber, maximumSessionNumber, onSessionChange, selectedSession }: Props): React.ReactElement {
+function ActionsRow ({ maximumSessionNumber, minimumSessionNumber, onSessionChange, selectedSession }: Props): React.ReactElement {
   const { t } = useTranslation();
 
   // used to clear input text
   const [inputValue, setInputValue] = useState('');
   const [parsedSessionNumber, setParsedSessionNumber] = useState<number | undefined>(undefined);
 
-    useEffect(() => {
-        setInputValue(selectedSession.toString())
-        setParsedSessionNumber(selectedSession);
-    }, [selectedSession]);
+  useEffect(() => {
+    setInputValue(selectedSession.toString());
+    setParsedSessionNumber(selectedSession);
+  }, [selectedSession]);
 
   const _onChangeKey = useCallback(
     (key: string): void => {

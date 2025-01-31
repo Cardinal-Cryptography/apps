@@ -6,23 +6,24 @@ import type { DeriveSessionProgress } from '@polkadot/api-derive/types';
 import { useMemo } from 'react';
 
 import { createNamedHook, useApi, useCall } from '@polkadot/react-hooks';
-import useEraSessionBoundaries from "./useEraSessionBoundaries.js";
+
+import useEraSessionBoundaries from './useEraSessionBoundaries.js';
 
 export interface SessionInfo {
-  /// Current session number, ie now when query is made; correlated with currentEra
-  currentSession: number,
-
-  /// Current era number, ie now when query is made; correlated with currentSession
+  // Current era number, ie now when query is made; correlated with currentSession
   currentEra: number,
 
-  /// how many eras behind pallet staking keeps data
+  // Current session number, ie now when query is made; correlated with currentEra
+  currentSession: number,
+
+  // how many eras behind pallet staking keeps data
   historyDepth: number,
 
-  /// how many sessions behind we can query performance - related to historyDepth
-  minimumSessionNumber: number,
-
-  /// how many session ahead we can predict block production committee - always no more till the end of the currentEra
+  // how many session ahead we can predict block production committee - always no more till the end of the currentEra
   maximumSessionNumber: number,
+
+  // how many sessions behind we can query performance - related to historyDepth
+  minimumSessionNumber: number,
 }
 
 function useSessionInfoImpl (): SessionInfo | undefined {
@@ -32,7 +33,7 @@ function useSessionInfoImpl (): SessionInfo | undefined {
   const sessionInfoBase = useCall<DeriveSessionProgress>(api.derive.session.progress);
   const currentSession = useMemo(() => {
     return sessionInfoBase?.currentIndex.toNumber();
-  },[sessionInfoBase]);
+  }, [sessionInfoBase]);
 
   const currentEra = useMemo(() => {
     return sessionInfoBase?.currentEra.toNumber();
@@ -52,18 +53,20 @@ function useSessionInfoImpl (): SessionInfo | undefined {
     if (currentEraBoundaries && sessionInfoBase) {
       return currentEraBoundaries.firstSession + sessionInfoBase.sessionsPerEra.toNumber() - 1;
     }
+
     return undefined;
   }, [currentEraBoundaries, sessionInfoBase]);
 
   if (currentSession && currentEra && minimumSessionNumber && maximumSessionNumber) {
     return {
-      currentSession,
       currentEra,
+      currentSession,
       historyDepth,
-      minimumSessionNumber,
       maximumSessionNumber,
-    }
+      minimumSessionNumber
+    };
   }
+
   return undefined;
 }
 

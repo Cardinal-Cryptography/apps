@@ -13,7 +13,7 @@ interface Props {
   currentSession: number;
 }
 
-function EraValidators ({ session, currentSession }: Props) {
+function EraValidators ({ currentSession, session }: Props) {
   const { t } = useTranslation();
   const eraValidatorsAddresses = useEraValidators(session, currentSession);
 
