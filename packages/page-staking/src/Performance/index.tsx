@@ -61,8 +61,6 @@ function PerformancePage (): React.ReactElement {
     );
   }
 
-  console.log(performanceTabMode, sessionInfo, inputSession);
-
   if (performanceTabMode === undefined ||
       sessionInfo === undefined ||
       inputSession === undefined) {

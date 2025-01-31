@@ -1,25 +1,29 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { u32 } from '@polkadot/types';
+import type {u32} from '@polkadot/types';
 
-import { useEffect, useState } from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
-import { createNamedHook, useApi } from '@polkadot/react-hooks';
+import {createNamedHook, useApi} from '@polkadot/react-hooks';
 
-export interface FutureCommittee {
+export interface FutureCommittee extends FutureCommitteeResult {
+  session: number;
+}
+
+interface FutureCommitteeResult {
   blockProducers: string[];
   finalityCommittee: string[];
 }
 
 interface PredictSessionCommitteeResult {
-  ok: FutureCommittee;
+  ok: FutureCommitteeResult;
 }
 
-function useFutureSessionCommitteeImpl (sessions: number[]): (FutureCommittee | undefined)[] {
+function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
   const { api } = useApi();
 
-  const [committees, setCommittees] = useState<(FutureCommittee | undefined)[]>([]);
+  const [allPredictedCommettees, setAllPredictedCommettees] = useState<(FutureCommitteeResult | undefined)[]>([]);
 
   useEffect(() => {
     const predictSessionCommittee = api.call?.alephSessionApi?.predictSessionCommittee;
@@ -31,7 +35,7 @@ function useFutureSessionCommitteeImpl (sessions: number[]): (FutureCommittee | 
     const predictCommitteePromises = sessions.map((session) => predictSessionCommittee?.(session as unknown as u32));
 
     Promise.all(predictCommitteePromises).then((futureCommitteesEncoded) => {
-      setCommittees(
+      setAllPredictedCommettees(
         futureCommitteesEncoded.map((futureCommittee) => {
           if (!futureCommittee) {
             return undefined;
@@ -62,9 +66,26 @@ function useFutureSessionCommitteeImpl (sessions: number[]): (FutureCommittee | 
   [api, JSON.stringify(sessions)]
   );
 
-  console.log(committees);
+  return useMemo(() => {
+    if (allPredictedCommettees.length > 0) {
+      const zipped: [number, (FutureCommitteeResult | undefined)][] = sessions.map(function (session, index) {
+        return [session, allPredictedCommettees[index]];
+      });
 
-  return committees;
+      return zipped.reduce(function (filtered: FutureCommittee[], [session, maybeFutureCommittee]) {
+        if (maybeFutureCommittee !== undefined) {
+          filtered.push({
+            blockProducers: maybeFutureCommittee.blockProducers,
+            finalityCommittee: maybeFutureCommittee.finalityCommittee,
+            session: session
+          });
+        }
+        return filtered;
+      }, []);
+    }
+
+    return [];
+  }, [allPredictedCommettees, sessions]);
 }
 
 export default createNamedHook('useFutureSessionCommittee', useFutureSessionCommitteeImpl);

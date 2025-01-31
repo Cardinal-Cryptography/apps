@@ -3,17 +3,27 @@
 
 import type { INumber } from '@polkadot/types/types';
 import type { u32 } from '@polkadot/types-codec';
+import type { FutureCommittee } from '../Performance/useFutureSessionCommittee.js';
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
-import { Button, CardSummary, InputAddressSimple, Spinner, SummaryBox, Table } from '@polkadot/react-components';
+import {
+  Button,
+  CardSummary,
+  InputAddressSimple,
+  Spinner,
+  SummaryBox,
+  Table,
+  ToggleGroup
+} from '@polkadot/react-components';
 import { useApi, useCall, useLenientThresholdPercentage, useNextTick } from '@polkadot/react-hooks';
 
 import Address from '../Performance/Address/index.js';
 import { calculatePercentReward } from '../Performance/BlockProductionCommitteeList.js';
 import useSessionCommitteePerformance from '../Performance/useCommitteePerformance.js';
+import useFutureSessionCommittee from '../Performance/useFutureSessionCommittee.js';
 import useSessionInfo from '../Performance/useSessionInfo.js';
 import { useTranslation } from '../translate.js';
 import Validator from './Validator.js';
@@ -41,6 +51,12 @@ function Query ({ className }: Props): React.ReactElement<Props> {
 
   const sessionInfo = useSessionInfo();
   const isNextTick = useNextTick();
+
+  const groups = [
+    { text: t('Past performance'), value: 'past' },
+    { text: t('Future committees'), value: 'future' },
+  ];
+  const [groupIndex, setGroupIndex] = useState(1);
 
   function range (size: number, startAt = 0) {
     return [...Array(size).keys()].map((i) => i + startAt);
@@ -82,6 +98,14 @@ function Query ({ className }: Props): React.ReactElement<Props> {
   },
   [sessionCommitteePerformance]);
 
+  const futureSessions = useMemo(() => {
+    if (sessionInfo) {
+      return range(sessionInfo.maximumSessionNumber - sessionInfo.currentSession + 1, sessionInfo.currentSession);
+    }
+
+    return [];
+  }, [sessionInfo]);
+
   const list = useMemo(
     () => isNextTick
       ? filteredSessionPerformances
@@ -110,6 +134,31 @@ function Query ({ className }: Props): React.ReactElement<Props> {
     ]
   );
 
+  const futureSessionCommittee = useFutureSessionCommittee(futureSessions);
+  const filteredSessionCommittee: FutureCommittee[] = useMemo(() => {
+    if (value) {
+      return futureSessionCommittee.filter((committee) => committee !== undefined && committee.blockProducers.includes(value));
+    }
+
+    return [];
+  }, [futureSessionCommittee, value]);
+
+  const futureSessionsList: FutureCommittee[] = useMemo(
+    () => isNextTick
+      ? filteredSessionCommittee
+      : [],
+    [isNextTick, filteredSessionCommittee]
+  );
+
+  const headerRefFutureCommittee = useRef<[string, string, number?][]>(
+    [
+      [t('future committee sessions'), 'start', 1],
+      [t('session'), 'expand'],
+      [t('blocks created'), 'expand'],
+      [t('max % reward'), 'expand']
+    ]
+  );
+
   if (!labels) {
     return <Spinner />;
   }
@@ -129,15 +178,22 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           onClick={_onQuery}
         />
       </InputAddressSimple>
+      {/*TODO: this is not displayed very well in UI, add some style*/}
       {value && !!isAlephChain &&
+        <ToggleGroup
+          onChange={setGroupIndex}
+          options={groups}
+          value={groupIndex}
+        />
+      }
+      {value && !!isAlephChain && groupIndex == 0 &&
       <SummaryBox className={className}>
-
         <CardSummary label={t('Underperformed Session Count')}>
           {underperformedValidatorSessionCount?.toString()}
         </CardSummary>
       </SummaryBox>
       }
-      {value && !!isAlephChain &&
+      {value && !!isAlephChain && groupIndex == 0 &&
       <Table
         className={className}
         empty={numberOfNonZeroPerformances === pastSessions.length && <div>{t('No entries found')}</div>}
@@ -159,6 +215,29 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           />
         ))}
       </Table>}
+       {value && !!isAlephChain && groupIndex == 1 &&
+        <Table
+          className={className}
+          empty={filteredSessionCommittee.length === futureSessions.length && <div>{t('No entries found')}</div>}
+          emptySpinner={
+            <>
+              {(filteredSessionCommittee.length !== pastSessions.length) && <div>{t('Querying future sessions')}</div>}
+            </>
+          }
+          header={headerRefFutureCommittee.current}
+        >
+          {futureSessionsList?.map((committee): React.ReactNode => (
+            <Address
+              address={value}
+              filterName={''}
+              blocksCreated={0}
+              rewardPercentage={"0.0"}
+              key={committee.session}
+              session={committee.session}
+            />
+          ))}
+        </Table>}
+
       {value && (
         <Validator
           labels={labels}
