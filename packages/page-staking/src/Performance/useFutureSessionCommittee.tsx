@@ -1,11 +1,11 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type {u32} from '@polkadot/types';
+import type { u32 } from '@polkadot/types';
 
-import {useEffect, useMemo, useState} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import {createNamedHook, useApi} from '@polkadot/react-hooks';
+import { createNamedHook, useApi } from '@polkadot/react-hooks';
 
 export interface FutureCommittee extends FutureCommitteeResult {
   session: number;
@@ -77,9 +77,10 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
           filtered.push({
             blockProducers: maybeFutureCommittee.blockProducers,
             finalityCommittee: maybeFutureCommittee.finalityCommittee,
-            session: session
+            session
           });
         }
+
         return filtered;
       }, []);
     }

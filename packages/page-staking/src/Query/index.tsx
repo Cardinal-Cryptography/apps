@@ -9,15 +9,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
-import {
-  Button,
-  CardSummary,
-  InputAddressSimple,
-  Spinner,
-  SummaryBox,
-  Table,
-  ToggleGroup
-} from '@polkadot/react-components';
+import { Button, CardSummary, InputAddressSimple, Spinner, SummaryBox, Table, ToggleGroup } from '@polkadot/react-components';
 import { useApi, useCall, useLenientThresholdPercentage, useNextTick } from '@polkadot/react-hooks';
 
 import Address from '../Performance/Address/index.js';
@@ -54,7 +46,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
 
   const groups = [
     { text: t('Past performance'), value: 'past' },
-    { text: t('Future committees'), value: 'future' },
+    { text: t('Future committees'), value: 'future' }
   ];
   const [groupIndex, setGroupIndex] = useState(1);
 
@@ -178,7 +170,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           onClick={_onQuery}
         />
       </InputAddressSimple>
-      {/*TODO: this is not displayed very well in UI, add some style*/}
+      {/* TODO: this is not displayed very well in UI, add some style*/}
       {value && !!isAlephChain &&
         <ToggleGroup
           onChange={setGroupIndex}
@@ -186,14 +178,14 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           value={groupIndex}
         />
       }
-      {value && !!isAlephChain && groupIndex == 0 &&
+      {value && !!isAlephChain && groupIndex === 0 &&
       <SummaryBox className={className}>
         <CardSummary label={t('Underperformed Session Count')}>
           {underperformedValidatorSessionCount?.toString()}
         </CardSummary>
       </SummaryBox>
       }
-      {value && !!isAlephChain && groupIndex == 0 &&
+      {value && !!isAlephChain && groupIndex === 0 &&
       <Table
         className={className}
         empty={numberOfNonZeroPerformances === pastSessions.length && <div>{t('No entries found')}</div>}
@@ -215,7 +207,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           />
         ))}
       </Table>}
-       {value && !!isAlephChain && groupIndex == 1 &&
+      {value && !!isAlephChain && groupIndex === 1 &&
         <Table
           className={className}
           empty={filteredSessionCommittee.length === futureSessions.length && <div>{t('No entries found')}</div>}
@@ -229,15 +221,14 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           {futureSessionsList?.map((committee): React.ReactNode => (
             <Address
               address={value}
-              filterName={''}
               blocksCreated={0}
-              rewardPercentage={"0.0"}
+              filterName={''}
               key={committee.session}
+              rewardPercentage={'0.0'}
               session={committee.session}
             />
           ))}
         </Table>}
-
       {value && (
         <Validator
           labels={labels}
