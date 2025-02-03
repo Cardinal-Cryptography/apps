@@ -21,7 +21,7 @@ function FutureBlockProductionCommitee ({ session }: Props): React.ReactElement<
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
     if (futureSessionCommittee && futureSessionCommittee.length > 0 && futureSessionCommittee[0]) {
-      return futureSessionCommittee[0].blockProducers.map((account) => {
+      return futureSessionCommittee[0].producers.map((account) => {
         return {
           isCommittee: true,
           validatorPerformance: {

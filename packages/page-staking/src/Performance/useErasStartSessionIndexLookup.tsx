@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 
 import { createNamedHook, useApi, useCall } from '@polkadot/react-hooks';
 
-type SessionIndexEntry = [{ args: [EraIndex] }, Option<u32>];
+ type SessionIndexEntry = [{ args: [EraIndex] }, Option<u32>];
 
 export interface EraFirstSession {
   readonly era: number,

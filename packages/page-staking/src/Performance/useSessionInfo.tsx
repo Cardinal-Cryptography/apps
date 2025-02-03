@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DeriveSessionProgress } from '@polkadot/api-derive/types';
+import type { Option, u32 } from '@polkadot/types-codec';
 
 import { useMemo } from 'react';
 
 import { createNamedHook, useApi, useCall } from '@polkadot/react-hooks';
-
-import useEraSessionBoundaries from './useEraSessionBoundaries.js';
 
 export interface SessionInfo {
   // Current era number, ie now when query is made; correlated with currentSession
@@ -28,7 +27,6 @@ export interface SessionInfo {
 
 function useSessionInfoImpl (): SessionInfo | undefined {
   const { api } = useApi();
-  const currentEraBoundaries = useEraSessionBoundaries(undefined);
 
   const sessionInfoBase = useCall<DeriveSessionProgress>(api.derive.session.progress);
   const currentSession = useMemo(() => {
@@ -49,13 +47,14 @@ function useSessionInfoImpl (): SessionInfo | undefined {
     return undefined;
   }, [historyDepth, currentSession, sessionInfoBase]);
 
+  const currentEraFirstSession = useCall<Option<u32>>(api.query.staking.erasStartSessionIndex, [currentEra]);
   const maximumSessionNumber = useMemo(() => {
-    if (currentEraBoundaries && sessionInfoBase) {
-      return currentEraBoundaries.firstSession + sessionInfoBase.sessionsPerEra.toNumber() - 1;
+    if (currentEraFirstSession && currentEraFirstSession.isSome && sessionInfoBase && currentSession) {
+      return currentEraFirstSession.unwrap().toNumber() + sessionInfoBase.sessionsPerEra.toNumber() - 1;
     }
 
     return undefined;
-  }, [currentEraBoundaries, sessionInfoBase]);
+  }, [currentEraFirstSession, sessionInfoBase, currentSession]);
 
   if (currentSession && currentEra && minimumSessionNumber && maximumSessionNumber) {
     return {
