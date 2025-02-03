@@ -20,6 +20,8 @@ interface Props {
 function SummarySession ({ className, performanceTabMode, session }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
 
+  // there's a bug here that if user waits long enough not refreshing page, ie to current era + 1, then
+  // displayed era in this summary would be incorrect for era + 1 sessions
   const eraSessionBoundaries = useEraSessionBoundaries(session);
 
   const era = useMemo(() => {

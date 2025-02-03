@@ -92,7 +92,9 @@ function Query ({ className }: Props): React.ReactElement<Props> {
 
   const futureSessions = useMemo(() => {
     if (sessionInfo) {
-      return range(sessionInfo.maximumSessionNumber - sessionInfo.currentSession + 1, sessionInfo.currentSession);
+      if (sessionInfo.currentSession < sessionInfo.maximumSessionNumber) {
+        return range(sessionInfo.maximumSessionNumber - sessionInfo.currentSession, sessionInfo.currentSession + 1);
+      }
     }
 
     return [];
@@ -129,7 +131,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
   const futureSessionCommittee = useFutureSessionCommittee(futureSessions);
   const filteredSessionCommittee: FutureCommittee[] = useMemo(() => {
     if (value) {
-      return futureSessionCommittee.filter((committee) => committee !== undefined && committee.blockProducers.includes(value));
+      return futureSessionCommittee.filter((committee) => committee !== undefined && committee.producers.includes(value));
     }
 
     return [];
@@ -212,7 +214,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
           empty={filteredSessionCommittee.length === futureSessions.length && <div>{t('No entries found')}</div>}
           emptySpinner={
             <>
-              {(filteredSessionCommittee.length !== pastSessions.length) && <div>{t('Querying future sessions')}</div>}
+              {(filteredSessionCommittee.length !== futureSessions.length) && <div>{t('Querying future sessions')}</div>}
             </>
           }
           header={headerRefFutureCommittee.current}

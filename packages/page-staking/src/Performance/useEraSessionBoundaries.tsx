@@ -13,8 +13,9 @@ export interface EraSessionBoundaries extends EraFirstSession {
   eraEndSession?: number;
 }
 
-// / Returns given era start first end last session. If session is undefined, assume it's current session.
-function useEraSessionBoundariesImpl (session?: number): EraSessionBoundaries | undefined {
+// Returns given era start first end last session. If session is undefined, assume it's current session.
+// This should always be called
+function useEraSessionBoundariesImpl (session: number): EraSessionBoundaries | undefined {
   const erasStartSessionIndexLookup = useErasStartSessionIndexLookup();
 
   function calculatePastEraBoundaries (session: number, eraToFirstSessionLookup: EraFirstSession[]): EraSessionBoundaries | undefined {
@@ -42,7 +43,7 @@ function useEraSessionBoundariesImpl (session?: number): EraSessionBoundaries | 
   }
 
   return useMemo((): EraFirstSession | undefined => {
-    if (session && erasStartSessionIndexLookup.length > 0) {
+    if (erasStartSessionIndexLookup.length > 0) {
       const pastEraBoundaries = calculatePastEraBoundaries(session, erasStartSessionIndexLookup);
 
       if (!pastEraBoundaries) {
@@ -50,8 +51,6 @@ function useEraSessionBoundariesImpl (session?: number): EraSessionBoundaries | 
       }
 
       return pastEraBoundaries;
-    } else if (erasStartSessionIndexLookup.length > 0) {
-      return calculateCurrentEraBoundaries(erasStartSessionIndexLookup);
     }
 
     return undefined;

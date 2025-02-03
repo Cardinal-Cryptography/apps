@@ -83,7 +83,7 @@ function PerformancePage (): React.ReactElement {
       </section>
       <section className='performance--actionsrow'>
         <ActionsRow
-          maximumSessionNumber={sessionInfo.maximumSessionNumber}
+          maximumSessionNumber={sessionInfo.maximumSessionNumber }
           minimumSessionNumber={sessionInfo.minimumSessionNumber}
           onSessionChange={setInputSession}
           selectedSession={inputSession}

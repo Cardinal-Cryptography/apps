@@ -1,7 +1,9 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import type { SessionCommitteeV14, SessionCommitteeV15, SessionNotWithinRange } from '@polkadot/apps-config/src/types.js';
 import type { u32 } from '@polkadot/types';
+import type { AccountId32 } from '@polkadot/types/interfaces';
 
 import { useEffect, useMemo, useState } from 'react';
 
@@ -12,18 +14,26 @@ export interface FutureCommittee extends FutureCommitteeResult {
 }
 
 interface FutureCommitteeResult {
-  blockProducers: string[];
-  finalityCommittee: string[];
+  producers: string[];
+  finalizers: string[];
 }
 
-interface PredictSessionCommitteeResult {
-  ok: FutureCommitteeResult;
+function instanceOfSessionCommitteeV15 (object: any): object is SessionCommitteeV15<AccountId32> {
+  return 'finalizers' in object && 'producers' in object;
+}
+
+function instanceOfSessionCommitteeV14 (object: any): object is SessionCommitteeV14<AccountId32> {
+  return 'finalityCommittee' in object && 'blockProducers' in object;
+}
+
+function instanceOfSessionNotWithinRange (object: any): object is SessionNotWithinRange {
+  return 'lowerLimit' in object && 'upperLimit' in object;
 }
 
 function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
   const { api } = useApi();
 
-  const [allPredictedCommettees, setAllPredictedCommettees] = useState<(FutureCommitteeResult | undefined)[]>([]);
+  const [allPredictedCommettees, setAllPredictedCommettees] = useState<(FutureCommitteeResult | undefined | SessionNotWithinRange)[]>([]);
 
   useEffect(() => {
     const predictSessionCommittee = api.call?.alephSessionApi?.predictSessionCommittee;
@@ -41,21 +51,34 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
             return undefined;
           }
 
-          const predictSessionCommitteeOutput = futureCommittee.toString();
+          if (futureCommittee.isErr) {
+            const err = futureCommittee.asErr;
 
-          try {
-            const json = JSON.parse(futureCommittee.toString()) as PredictSessionCommitteeResult;
-
-            if (json.ok === undefined) {
-              console.error('Unexpected predictSessionCommittee output format! Got: ', json);
-            } else {
-              return json.ok;
+            if (!err.isSessionNotWithinRange) {
+              return undefined;
             }
-          } catch (parsingError) {
-            console.error('Failed to parse predictSessionCommittee output: ',
-              predictSessionCommitteeOutput,
-              ', detailed error: ',
-              parsingError);
+
+            return err.asSessionNotWithinRange;
+          }
+
+          const result = futureCommittee.asOk;
+
+          if (instanceOfSessionCommitteeV14(result)) {
+            const resultV14Version = result;
+
+            return {
+              finalizers: resultV14Version.finalityCommittee.map((accountId) => accountId.toString()),
+              producers: resultV14Version.blockProducers.map((accountId) => accountId.toString())
+            };
+          }
+
+          if (instanceOfSessionCommitteeV15(result)) {
+            const resultV15Version = result;
+
+            return {
+              finalizers: resultV15Version.finalizers.map((accountId) => accountId.toString()),
+              producers: resultV15Version.producers.map((accountId) => accountId.toString())
+            };
           }
 
           return undefined;
@@ -68,17 +91,27 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
 
   return useMemo(() => {
     if (allPredictedCommettees.length > 0) {
-      const zipped: [number, (FutureCommitteeResult | undefined)][] = sessions.map(function (session, index) {
+      const zipped: [number, (FutureCommitteeResult | undefined | SessionNotWithinRange)][] = sessions.map(function (session, index) {
         return [session, allPredictedCommettees[index]];
       });
 
       return zipped.reduce(function (filtered: FutureCommittee[], [session, maybeFutureCommittee]) {
         if (maybeFutureCommittee !== undefined) {
-          filtered.push({
-            blockProducers: maybeFutureCommittee.blockProducers,
-            finalityCommittee: maybeFutureCommittee.finalityCommittee,
-            session
-          });
+          if (instanceOfSessionNotWithinRange(maybeFutureCommittee)) {
+            const err = maybeFutureCommittee;
+
+            console.error(`predictSessionCommittee called for session ${session} that is not within range [${err.lowerLimit.toString()}; ${err.upperLimit.toString()}]`);
+          } else {
+            const futureCommittee = maybeFutureCommittee;
+
+            filtered.push({
+              finalizers: futureCommittee.finalizers,
+              producers: futureCommittee.producers,
+              session
+            });
+          }
+        } else {
+          console.error(`predictSessionCommittee called for session ${session} returned unexpected error!`);
         }
 
         return filtered;
