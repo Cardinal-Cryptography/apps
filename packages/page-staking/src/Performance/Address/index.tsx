@@ -9,16 +9,12 @@ import { AddressSmall, Icon, Spinner } from '@polkadot/react-components';
 import { checkVisibility } from '@polkadot/react-components/util';
 import { useAddressToDomain, useApi, useDeriveAccountInfo } from '@polkadot/react-hooks';
 
-import { useTranslation } from '../../translate.js';
-
 interface Props {
   address: string;
   filterName: string;
   session?: number;
   blocksCreated?: number,
   rewardPercentage?: string,
-  isCommittee: boolean,
-  nextSessionInCommittee?: number,
 }
 
 function useAddressCalls (_api: ApiPromise, address: string) {
@@ -31,9 +27,8 @@ function queryAddress (address: string) {
   window.location.hash = `/staking/query/${address}`;
 }
 
-function Address ({ address, blocksCreated, filterName, isCommittee, nextSessionInCommittee, rewardPercentage, session }: Props): React.ReactElement<Props> | null {
+function Address ({ address, blocksCreated, filterName, rewardPercentage, session }: Props): React.ReactElement<Props> | null {
   const { api } = useApi();
-  const { t } = useTranslation();
   const { accountInfo } = useAddressCalls(api, address);
   const { primaryDomain: domain } = useAddressToDomain(address);
 
@@ -59,31 +54,12 @@ function Address ({ address, blocksCreated, filterName, isCommittee, nextSession
       {session && <td className='number'>
         {session}
       </td>}
-      {isCommittee &&
-        <>
-          <td className='number'>
-            {blocksCreated ?? <Spinner noLabel={true} />}
-          </td>
-          <td className='number'>
-            {blocksCreated === undefined ? '' : rewardPercentage}
-          </td>
-        </>
-      }
-      {!isCommittee &&
-        <>
-          <td className='text-right'>
-            {nextSessionInCommittee
-              ? nextSessionInCommittee === -1
-                ? t('Not present in any committee in the current era')
-                : t('Next committee session {{session}}', { replace: { session: nextSessionInCommittee } })
-              : <Spinner noLabel={true} />
-            }
-          </td>
-          <td className='number'>
-          0.0
-          </td>
-        </>
-      }
+      <td className='number'>
+        {blocksCreated ?? <Spinner noLabel={true} />}
+      </td>
+      <td className='number'>
+        {blocksCreated === undefined ? '' : rewardPercentage}
+      </td>
       {!session && <td className='number'>
         <Icon
           className='staking--stats highlight--color'

@@ -15,23 +15,13 @@ import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
 import { parseSessionBlockCount } from './useCommitteePerformance.js';
-import { useEraValidators } from './useEraValidators.js';
-
-interface Props {
-  currentSession: number,
-  maximumSessionNumber: number,
-}
 
 export interface EraValidatorPerformance {
   validatorPerformance: ValidatorPerformance;
   isCommittee: boolean;
 }
 
-function range (size: number, startAt = 0) {
-  return [...Array(size).keys()].map((i) => i + startAt);
-}
-
-function Performance ({ currentSession, maximumSessionNumber }: Props): React.ReactElement<Props> {
+function Performance (): React.ReactElement<null> {
   const { api } = useApi();
 
   const [sessionValidatorBlockCountLookup, setSessionValidatorBlockCountLookup] = useState<[string, number][]>([]);
@@ -41,25 +31,6 @@ function Performance ({ currentSession, maximumSessionNumber }: Props): React.Re
   const sessionValidatorsStrings = useMemo(() => {
     return sessionValidators?.map((validator) => validator.toString());
   }, [sessionValidators]);
-
-  const eraValidatorsAddresses = useEraValidators(currentSession, currentSession);
-
-  const eraValidators = useMemo(() => {
-    if (eraValidatorsAddresses && eraValidatorsAddresses.length > 0) {
-      return eraValidatorsAddresses;
-    }
-
-    return [];
-  }, [eraValidatorsAddresses]
-  );
-
-  const futureSessions = useMemo(() => {
-    if (currentSession < maximumSessionNumber) {
-      return range(maximumSessionNumber - currentSession, currentSession + 1);
-    }
-
-    return [];
-  }, [currentSession, maximumSessionNumber]);
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
     if (!sessionValidatorsStrings) {
@@ -79,24 +50,13 @@ function Performance ({ currentSession, maximumSessionNumber }: Props): React.Re
         };
       });
 
-    const nonCommitteeAccountIds = eraValidators.filter((validator) => !sessionValidatorsStrings.find((value) => validator === value));
-    const validatorPerformancesNonCommittee = nonCommitteeAccountIds.map((accountId) => {
-      return {
-        isCommittee: false,
-        validatorPerformance: {
-          accountId,
-          blockCount: 0
-        }
-      };
-    });
-
     const sessionPeriod = Number(getCommitteeManagement(api).consts.sessionPeriod.toString());
 
     setExpectedBlockCountInSessions(sessionPeriod / sessionValidatorsStrings.length);
 
-    return validatorPerformancesCommittee.concat(validatorPerformancesNonCommittee);
+    return validatorPerformancesCommittee;
   },
-  [api, eraValidators, sessionValidatorBlockCountLookup, sessionValidatorsStrings]
+  [api, sessionValidatorBlockCountLookup, sessionValidatorsStrings]
 
   );
 
@@ -121,7 +81,6 @@ function Performance ({ currentSession, maximumSessionNumber }: Props): React.Re
       <StyledBlockProductionCommitteeList
         eraValidatorPerformances={eraValidatorPerformances}
         expectedBlockCount={expectedBlockCountInSessions}
-        futureSessions={futureSessions}
       />
     </div>
   );

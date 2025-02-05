@@ -202,7 +202,6 @@ function Query ({ className }: Props): React.ReactElement<Props> {
             address={value}
             blocksCreated={performance[0]}
             filterName={''}
-            isCommittee={true}
             key={performance[1]}
             rewardPercentage={calculatePercentReward(performance[0], performance[2], lenientThresholdPercentage, true)}
             session={performance[1]}
@@ -225,7 +224,6 @@ function Query ({ className }: Props): React.ReactElement<Props> {
               address={value}
               blocksCreated={0}
               filterName={''}
-              isCommittee={true}
               key={committee.session}
               rewardPercentage={'0.0'}
               session={committee.session}
