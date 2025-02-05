@@ -1,7 +1,6 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { DeriveEraExposure } from '@polkadot/api-derive/types';
 import type { StorageKey } from '@polkadot/types';
 import type { AnyTuple, Codec } from '@polkadot/types/types';
 import type { ValidatorPerformance } from './useCommitteePerformance.js';
@@ -16,9 +15,11 @@ import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
 import { parseSessionBlockCount } from './useCommitteePerformance.js';
+import { useEraValidators } from './useEraValidators.js';
 
 interface Props {
-  era: number,
+  currentSession: number,
+  maximumSessionNumber: number,
 }
 
 export interface EraValidatorPerformance {
@@ -26,7 +27,11 @@ export interface EraValidatorPerformance {
   isCommittee: boolean;
 }
 
-function Performance ({ era }: Props): React.ReactElement<Props> {
+function range (size: number, startAt = 0) {
+  return [...Array(size).keys()].map((i) => i + startAt);
+}
+
+function Performance ({ currentSession, maximumSessionNumber }: Props): React.ReactElement<Props> {
   const { api } = useApi();
 
   const [sessionValidatorBlockCountLookup, setSessionValidatorBlockCountLookup] = useState<[string, number][]>([]);
@@ -37,15 +42,24 @@ function Performance ({ era }: Props): React.ReactElement<Props> {
     return sessionValidators?.map((validator) => validator.toString());
   }, [sessionValidators]);
 
-  const eraExposure = useCall<DeriveEraExposure>(api.derive.staking.eraExposure, [era]);
+  const eraValidatorsAddresses = useEraValidators(currentSession, currentSession);
+
   const eraValidators = useMemo(() => {
-    if (eraExposure?.validators) {
-      return Object.keys(eraExposure?.validators);
+    if (eraValidatorsAddresses && eraValidatorsAddresses.length > 0) {
+      return eraValidatorsAddresses;
     }
 
     return [];
-  }, [eraExposure]
+  }, [eraValidatorsAddresses]
   );
+
+  const futureSessions = useMemo(() => {
+    if (currentSession < maximumSessionNumber) {
+      return range(maximumSessionNumber - currentSession, currentSession + 1);
+    }
+
+    return [];
+  }, [currentSession, maximumSessionNumber]);
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
     if (!sessionValidatorsStrings) {
@@ -107,6 +121,7 @@ function Performance ({ era }: Props): React.ReactElement<Props> {
       <StyledBlockProductionCommitteeList
         eraValidatorPerformances={eraValidatorPerformances}
         expectedBlockCount={expectedBlockCountInSessions}
+        futureSessions={futureSessions}
       />
     </div>
   );

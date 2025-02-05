@@ -110,7 +110,8 @@ function PerformancePage (): React.ReactElement {
           <>
             {performanceTabMode === PerformanceTabMode.Current &&
               (<Performance
-                era={sessionInfo.currentEra}
+                currentSession={sessionInfo.currentSession}
+                maximumSessionNumber={sessionInfo.maximumSessionNumber }
               />)
             }
           </>
