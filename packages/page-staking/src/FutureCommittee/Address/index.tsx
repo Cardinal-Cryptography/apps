@@ -55,7 +55,7 @@ function Address ({ address, currentSessionCommittee, filterName, nextSessionInC
         />
       </td>
       <td className='number'>
-        {nextSessionInCommittee}
+        {nextSessionInCommittee ?? 'No next committee in the current era'}
       </td>
       <td className='number'>
         <Icon
