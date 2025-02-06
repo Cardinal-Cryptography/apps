@@ -45,8 +45,6 @@ function CurrentList ({ suspensions }: Props): React.ReactElement<Props> {
     return [];
   }, [eraValidators]);
 
-  console.log(reservedValidators);
-
   const filteredSuspensions = useMemo(() => {
     return suspensions?.filter(
       ({ address, suspensionLiftsInEra }) =>

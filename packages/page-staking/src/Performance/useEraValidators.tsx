@@ -10,18 +10,25 @@ import { useApi } from '@polkadot/react-hooks';
 
 import { getApiAtBlock, getBlocksImportantForSession } from './utils.js';
 
-export const useEraValidators = (session: number, currentSession: number): string[] | undefined => {
+export const useEraValidators = (session: number): string[] | undefined => {
   const { api } = useApi();
 
   const [validators, setValidators] = useState<string[]>();
 
   useEffect(() => {
-    if (session <= currentSession) {
-      getEraValidators(session, api)
-        .then(setValidators)
-        .catch(console.error);
-    }
-  }, [api, session, currentSession]);
+    api.rpc.chain.getBlockHash().then((bestBlockHash) => {
+      api.rpc.chain.getBlock(bestBlockHash).then((bestBlockSigned) => {
+        const bestBlockNumber = bestBlockSigned.block.header.number.toNumber();
+        const { firstBlockOfSelectedAuraSession } = getBlocksImportantForSession(session, api);
+
+        if (firstBlockOfSelectedAuraSession <= bestBlockNumber) {
+          getEraValidators(session, api)
+            .then(setValidators)
+            .catch(console.error);
+        }
+      }).catch(console.error);
+    }).catch(console.error);
+  }, [api, session]);
 
   return validators;
 };

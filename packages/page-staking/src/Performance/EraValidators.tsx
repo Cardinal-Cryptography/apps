@@ -10,12 +10,11 @@ import { useEraValidators } from './useEraValidators.js';
 
 interface Props {
   session: number;
-  currentSession: number;
 }
 
-function EraValidators ({ currentSession, session }: Props) {
+function EraValidators ({ session }: Props) {
   const { t } = useTranslation();
-  const eraValidatorsAddresses = useEraValidators(session, currentSession);
+  const eraValidatorsAddresses = useEraValidators(session);
 
   const messageOnEmpty = eraValidatorsAddresses && t("Data isn't available.");
 

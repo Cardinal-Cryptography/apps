@@ -102,7 +102,6 @@ function PerformancePage (): React.ReactElement {
       <section>
         {groupIndex === 0 &&
           <EraValidators
-            currentSession={sessionInfo.currentSession}
             session={inputSession}
           />
         }

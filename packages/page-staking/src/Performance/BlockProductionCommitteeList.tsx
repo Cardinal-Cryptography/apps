@@ -26,7 +26,7 @@ function getFiltered (displayOnlyCommittee: boolean, eraValidatorPerformances: E
 
 export function calculatePercentReward (blocksCreated: number | undefined, blocksTargetValue: number | undefined, lenientThresholdPercentage: number | undefined, isCommittee: boolean) {
   if (blocksCreated === undefined || blocksTargetValue === undefined || lenientThresholdPercentage === undefined) {
-    return '';
+    return '0.0';
   }
 
   let rewardPercentage = 0;

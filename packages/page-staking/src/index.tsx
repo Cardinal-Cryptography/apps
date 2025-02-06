@@ -18,6 +18,7 @@ import { isFunction } from '@polkadot/util';
 
 import Actions from './Actions/index.js';
 import Bags from './Bags/index.js';
+import FutureCommittee from './FutureCommittee/index.js';
 import Payouts from './Payouts/index.js';
 import PerformancePage from './Performance/index.js';
 import Query from './Query/index.js';
@@ -133,6 +134,10 @@ function StakingApp ({ basePath, className = '' }: Props): React.ReactElement<Pr
       text: t('Performance')
     },
     {
+      name: 'futureCommittee',
+      text: t('Future Committee')
+    },
+    {
       name: 'suspensions',
       text: t('Suspensions')
     }
@@ -207,6 +212,10 @@ function StakingApp ({ basePath, className = '' }: Props): React.ReactElement<Pr
           <Route
             element={<PerformancePage />}
             path='performance'
+          />
+          <Route
+            element={<FutureCommittee />}
+            path='futureCommittee'
           />
           <Route
             element={<SuspensionsPage />}
