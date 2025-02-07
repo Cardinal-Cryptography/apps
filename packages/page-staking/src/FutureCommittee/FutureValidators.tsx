@@ -1,17 +1,16 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Codec } from '@polkadot/types/types';
-
 import React, { useMemo, useRef, useState } from 'react';
 
 import { Table } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
+import { useApi } from '@polkadot/react-hooks';
 
 import Filtering from '../Filtering.js';
 import { useEraValidators } from '../Performance/useEraValidators.js';
 import useFutureSessionCommittee from '../Performance/useFutureSessionCommittee.js';
 import { useTranslation } from '../translate.js';
+import useSessionValidators from '../useSessionValidators.js';
 import Address from './Address/index.js';
 
 interface Props {
@@ -35,10 +34,7 @@ function FutureValidators ({ currentSession, maximumSessionNumber }: Props): Rea
 
   const [nameFilter, setNameFilter] = useState<string>('');
 
-  const sessionValidators = useCall<Codec[]>(api.query.session.validators);
-  const sessionValidatorsStrings = useMemo(() => {
-    return sessionValidators?.map((validator) => validator.toString());
-  }, [sessionValidators]);
+  const sessionValidators = useSessionValidators(api);
 
   const eraValidatorsAddresses = useEraValidators(currentSession);
   const eraValidators = useMemo(() => {
@@ -60,7 +56,7 @@ function FutureValidators ({ currentSession, maximumSessionNumber }: Props): Rea
   const futureSessionCommittee = useFutureSessionCommittee(futureSessions ?? []);
 
   const validatorsList: ListEntry[] = useMemo(() => {
-    if (futureSessionCommittee.length > 0 && sessionValidatorsStrings && sessionValidatorsStrings.length > 0) {
+    if (futureSessionCommittee.length > 0 && sessionValidators && sessionValidators.length > 0) {
       return eraValidators.map((accountId) => {
         const nextCommittee = futureSessionCommittee.find((futureCommittee) => {
           return futureCommittee.producers.find((producer) => producer === accountId) !== undefined;
@@ -68,7 +64,7 @@ function FutureValidators ({ currentSession, maximumSessionNumber }: Props): Rea
 
         return {
           accountId,
-          currentSessionCommittee: sessionValidatorsStrings.includes(accountId),
+          currentSessionCommittee: sessionValidators.includes(accountId),
           nextSessionInCommittee: nextCommittee?.session
         };
       }).sort((_, b) => {
@@ -77,7 +73,7 @@ function FutureValidators ({ currentSession, maximumSessionNumber }: Props): Rea
     }
 
     return [];
-  }, [futureSessionCommittee, eraValidators, sessionValidatorsStrings]);
+  }, [futureSessionCommittee, eraValidators, sessionValidators]);
 
   const headerRef = useRef<[string, string, number?][]>(
     [

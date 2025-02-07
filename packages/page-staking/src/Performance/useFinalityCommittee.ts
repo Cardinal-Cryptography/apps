@@ -28,13 +28,11 @@ export const useFinalityCommittee = (session: number, currentSession: number): s
 };
 
 const getFinalityCommittee = async (session: number, api: ApiPromise) => {
-  const { firstBlockOfSelectedAuraSession, lastBlockOfPrecedingAlephBFTSession } = getBlocksImportantForSession(session, api);
+  const { lastBlockOfPrecedingAlephBFTSession } = getBlocksImportantForSession(session, api);
 
   const getFinalityCommittee: () => Promise<Vec<AccountId32>> = (
     // Committee must be set on the last block of the preceding session.
-    (await getApiAtBlock(lastBlockOfPrecedingAlephBFTSession, api)).query.aleph.nextFinalityCommittee ||
-    (await getApiAtBlock(firstBlockOfSelectedAuraSession, api)).query.session.validators
-  );
+    await getApiAtBlock(lastBlockOfPrecedingAlephBFTSession, api)).query.aleph.nextFinalityCommittee;
 
   return (await getFinalityCommittee()).map((accountId) => accountId.toHuman());
 };
