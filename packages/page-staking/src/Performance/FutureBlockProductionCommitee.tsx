@@ -3,40 +3,39 @@
 
 import type { EraValidatorPerformance } from './Performance.js';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { styled } from '@polkadot/react-components';
 
 import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
-import useSessionCommitteePerformance from './useCommitteePerformance.js';
+import useFutureSessionCommittee from './useFutureSessionCommittee.js';
 
 interface Props {
   session: number,
 }
 
-function HistoricPerformance ({ session }: Props): React.ReactElement<Props> {
-  const sessionCommitteePerformance = useSessionCommitteePerformance([session]);
-  const [expectedBlockCountInSessions, setExpectedBlockCountInSessions] = useState<number | undefined>(undefined);
+function FutureBlockProductionCommitee ({ session }: Props): React.ReactElement<Props> {
+  const futureSessionCommittee = useFutureSessionCommittee([session]);
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
-    if (sessionCommitteePerformance && sessionCommitteePerformance.length > 0) {
-      setExpectedBlockCountInSessions(sessionCommitteePerformance[0].expectedBlockCount);
-      const validatorPerformancesCommittee = sessionCommitteePerformance[0].performance.map((committeePerformance) => {
+    if (futureSessionCommittee && futureSessionCommittee.length > 0 && futureSessionCommittee[0]) {
+      return futureSessionCommittee[0].producers.map((account) => {
         return {
           isCommittee: true,
-          validatorPerformance: committeePerformance
+          validatorPerformance: {
+            accountId: account,
+            blockCount: 0
+          }
         };
       }
       );
-
-      return validatorPerformancesCommittee;
     }
 
     return [];
   },
-  [sessionCommitteePerformance]
+  [futureSessionCommittee]
 
   );
 
@@ -44,12 +43,10 @@ function HistoricPerformance ({ session }: Props): React.ReactElement<Props> {
     <div className='staking--Performance'>
       <Summary
         eraValidatorPerformances={eraValidatorPerformances}
-        expectedBlockCount={expectedBlockCountInSessions}
       />
       <ActionsBanner />
       <StyledBlockProductionCommitteeList
         eraValidatorPerformances={eraValidatorPerformances}
-        expectedBlockCount={expectedBlockCountInSessions}
       />
     </div>
   );
@@ -59,4 +56,4 @@ const StyledBlockProductionCommitteeList = styled(BlockProductionCommitteeList)`
   margin-bottom: 64px;
 `;
 
-export default React.memo(HistoricPerformance);
+export default React.memo(FutureBlockProductionCommitee);

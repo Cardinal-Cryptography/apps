@@ -16,9 +16,16 @@ export const useEraValidators = (session: number): string[] | undefined => {
   const [validators, setValidators] = useState<string[]>();
 
   useEffect(() => {
-    getEraValidators(session, api)
-      .then(setValidators)
-      .catch(console.error);
+    api.rpc.chain.getBlock().then((bestBlockSigned) => {
+      const bestBlockNumber = bestBlockSigned.block.header.number.toNumber();
+      const { firstBlockOfSelectedAuraSession } = getBlocksImportantForSession(session, api);
+
+      if (firstBlockOfSelectedAuraSession <= bestBlockNumber) {
+        getEraValidators(session, api)
+          .then(setValidators)
+          .catch(console.error);
+      }
+    }).catch(console.error);
   }, [api, session]);
 
   return validators;

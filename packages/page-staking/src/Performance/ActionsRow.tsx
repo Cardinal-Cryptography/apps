@@ -3,26 +3,30 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button, Input } from '@polkadot/react-components';
 
 import { useTranslation } from '../translate.js';
 
 interface Props {
-  currentSession: number | undefined;
-  historyDepth: number | undefined;
   minimumSessionNumber: number | undefined;
+  maximumSessionNumber: number | undefined;
   selectedSession: number;
   onSessionChange: Dispatch<SetStateAction<number | undefined>>;
 }
 
-function ActionsRow ({ currentSession, historyDepth, minimumSessionNumber, onSessionChange, selectedSession }: Props): React.ReactElement {
+function ActionsRow ({ maximumSessionNumber, minimumSessionNumber, onSessionChange, selectedSession }: Props): React.ReactElement {
   const { t } = useTranslation();
 
   // used to clear input text
   const [inputValue, setInputValue] = useState('');
   const [parsedSessionNumber, setParsedSessionNumber] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    setInputValue(selectedSession.toString());
+    setParsedSessionNumber(selectedSession);
+  }, [selectedSession]);
 
   const _onChangeKey = useCallback(
     (key: string): void => {
@@ -30,11 +34,11 @@ function ActionsRow ({ currentSession, historyDepth, minimumSessionNumber, onSes
 
       let isInputSessionNumberCorrect = false;
 
-      if (currentSession && historyDepth && minimumSessionNumber) {
+      if (minimumSessionNumber && maximumSessionNumber) {
         const sessionNumber = parseInt(key);
 
         if (!isNaN(sessionNumber)) {
-          if (sessionNumber <= currentSession && minimumSessionNumber <= sessionNumber) {
+          if (minimumSessionNumber <= sessionNumber && sessionNumber <= maximumSessionNumber) {
             isInputSessionNumberCorrect = true;
           }
         }
@@ -44,7 +48,7 @@ function ActionsRow ({ currentSession, historyDepth, minimumSessionNumber, onSes
         ? setParsedSessionNumber(Number(key))
         : setParsedSessionNumber(undefined);
     },
-    [currentSession, minimumSessionNumber, historyDepth]
+    [minimumSessionNumber, maximumSessionNumber]
   );
 
   const _onAdd = useCallback(
@@ -59,50 +63,48 @@ function ActionsRow ({ currentSession, historyDepth, minimumSessionNumber, onSes
   const help = useMemo(() => {
     const constraints = [
       typeof minimumSessionNumber === 'number' && `${t('not smaller than')} ${minimumSessionNumber}`,
-      typeof currentSession === 'number' && `${t('not greater than')} ${currentSession}`
+      typeof maximumSessionNumber === 'number' && `${t('not greater than')} ${maximumSessionNumber}`
     ];
 
     const msg = constraints.filter(Boolean).join(', ');
 
     return msg && ` - ${msg}`;
   },
-  [t, currentSession, minimumSessionNumber]
+  [t, maximumSessionNumber, minimumSessionNumber]
   );
 
   const _decrementSession = useCallback(
     (): void => {
-      const session = selectedSession || currentSession;
-
-      if (session === undefined || minimumSessionNumber === undefined) {
+      if (selectedSession === undefined || minimumSessionNumber === undefined) {
         return;
       }
 
-      const nextSession = Math.max(minimumSessionNumber, session - 1);
+      const nextSession = Math.max(minimumSessionNumber, selectedSession - 1);
 
       setInputValue(nextSession.toString());
       setParsedSessionNumber(nextSession);
       onSessionChange(nextSession);
     },
-    [currentSession, minimumSessionNumber, selectedSession, onSessionChange]
+    [minimumSessionNumber, selectedSession, onSessionChange]
   );
 
   const _incrementSession = useCallback(
     (): void => {
-      if (!currentSession) {
+      if (!maximumSessionNumber) {
         return;
       }
 
-      const nextSession = Math.min(currentSession, (selectedSession || currentSession) + 1);
+      const nextSession = Math.min(maximumSessionNumber, (selectedSession || maximumSessionNumber) + 1);
 
       setInputValue(nextSession.toString());
       setParsedSessionNumber(nextSession);
       onSessionChange(nextSession);
     },
-    [currentSession, selectedSession, onSessionChange]
+    [maximumSessionNumber, selectedSession, onSessionChange]
   );
 
   const isGoBackDisabled = minimumSessionNumber === undefined || selectedSession === minimumSessionNumber;
-  const isGoForwardDisabled = selectedSession === currentSession;
+  const isGoForwardDisabled = maximumSessionNumber === undefined || selectedSession === maximumSessionNumber;
 
   return (
     <>

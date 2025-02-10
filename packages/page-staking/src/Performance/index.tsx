@@ -1,7 +1,7 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { MarkWarning, Spinner, SummaryBox, ToggleGroup } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
@@ -10,46 +10,61 @@ import { useTranslation } from '../translate.js';
 import ActionsRow from './ActionsRow.js';
 import EraValidators from './EraValidators.js';
 import FinalityCommittee from './FinalityCommittee.js';
+import FutureBlockProductionCommitee from './FutureBlockProductionCommitee.js';
 import HistoricPerformance from './HistoricPerformance.js';
 import Performance from './Performance.js';
 import SummarySession from './SummarySession.js';
-import useCurrentSessionInfo from './useCurrentSessionInfo.js';
-import useEra from './useEra.js';
+import useSessionInfo from './useSessionInfo.js';
 
-export interface SessionEra {
-  session: number,
-  era: number,
-  currentSessionMode: boolean,
+export enum PerformanceTabMode {
+  Past = 1,
+  Current = 2,
+  Future= 3,
 }
 
 function PerformancePage (): React.ReactElement {
   const { api } = useApi();
   const { t } = useTranslation();
 
-  const groups = [
-    { text: t('Era validators'), value: 'validators' },
-    { text: t('Block production committee'), value: 'block' },
-    { text: t('Finality committee'), value: 'finality' }
-  ];
-
   const [groupIndex, setGroupIndex] = useState(1);
 
-  const [currentSession, currentEra, historyDepth, minimumSessionNumber] = useCurrentSessionInfo();
-
   const [inputSession, setInputSession] = useState<number | undefined>(undefined);
-  const era = useEra(inputSession);
+  const [performanceTabMode, setPerformanceTabMode] = useState<PerformanceTabMode | undefined>(undefined);
 
-  const sessionEra = useMemo((): SessionEra | undefined => {
-    if (era !== undefined && inputSession !== undefined && inputSession !== currentSession) {
-      return { currentSessionMode: false, era, session: inputSession };
+  const groups = [
+    {
+      isDisabled: performanceTabMode === PerformanceTabMode.Future,
+      text: t('Era validators'),
+      value: 'validators'
+    },
+    {
+      text: t('Block production committee'),
+      value: 'block'
+    },
+    {
+      isDisabled: performanceTabMode === PerformanceTabMode.Future,
+      text: t('Finality committee'),
+      value: 'finality'
     }
+  ];
 
-    if (currentSession && currentEra) {
-      return { currentSessionMode: true, era: currentEra, session: currentSession };
+  const sessionInfo = useSessionInfo();
+
+  useEffect(() => {
+    if (sessionInfo) {
+      if (!inputSession) {
+        setInputSession(sessionInfo.currentSession);
+        setPerformanceTabMode(PerformanceTabMode.Current);
+      } else if (inputSession < sessionInfo.currentSession) {
+        setPerformanceTabMode(PerformanceTabMode.Past);
+      } else if (inputSession > sessionInfo.currentSession) {
+        setPerformanceTabMode(PerformanceTabMode.Future);
+        setGroupIndex(1);
+      } else if (inputSession === sessionInfo.currentSession) {
+        setPerformanceTabMode(PerformanceTabMode.Current);
+      }
     }
-
-    return undefined;
-  }, [inputSession, currentEra, currentSession, era]);
+  }, [sessionInfo, inputSession]);
 
   if (!api.runtimeChain.toString().includes('Aleph Zero')) {
     return (
@@ -57,7 +72,9 @@ function PerformancePage (): React.ReactElement {
     );
   }
 
-  if (!sessionEra) {
+  if (performanceTabMode === undefined ||
+      sessionInfo === undefined ||
+      inputSession === undefined) {
     return (
       <Spinner label={'loading data'} />
     );
@@ -69,48 +86,66 @@ function PerformancePage (): React.ReactElement {
         <SummaryBox>
           <section>
             <SummarySession
-              era={sessionEra.era}
-              session={sessionEra.session}
+              performanceTabMode={performanceTabMode}
+              session={inputSession}
             />
           </section>
         </SummaryBox>
       </section>
       <section className='performance--actionsrow'>
         <ActionsRow
-          currentSession={currentSession}
-          historyDepth={historyDepth}
-          minimumSessionNumber={minimumSessionNumber}
+          maximumSessionNumber={sessionInfo.maximumSessionNumber }
+          minimumSessionNumber={sessionInfo.minimumSessionNumber}
           onSessionChange={setInputSession}
-          selectedSession={sessionEra.session}
+          selectedSession={inputSession}
         />
       </section>
       <section>
-        <ToggleGroup
-          onChange={setGroupIndex}
-          options={groups}
-          value={groupIndex}
-        />
+        <>
+          <ToggleGroup
+            onChange={setGroupIndex}
+            options={groups}
+            value={groupIndex}
+          />
+        </>
       </section>
       <section>
-        {groupIndex === 0 && <EraValidators session={sessionEra.session} />}
-        {groupIndex === 1 && (
+        {groupIndex === 0 &&
+          <EraValidators
+            session={inputSession}
+          />
+        }
+        {groupIndex === 1 &&
           <>
-            {sessionEra.currentSessionMode
-              ? (
-                <Performance
-                  era={sessionEra.era}
-                  session={sessionEra.session}
-                />
-              )
-              : (
-                <HistoricPerformance
-                  era={sessionEra.era}
-                  session={sessionEra.session}
-                />
-              )}
+            {performanceTabMode === PerformanceTabMode.Current &&
+              <Performance />
+            }
           </>
-        )}
-        {groupIndex === 2 && <FinalityCommittee session={sessionEra.session} />}
+        }
+        {groupIndex === 1 &&
+          <>
+            {performanceTabMode === PerformanceTabMode.Past &&
+              (<HistoricPerformance
+                session={inputSession}
+              />)
+            }
+          </>
+        }
+        {groupIndex === 1 &&
+            <>
+              {performanceTabMode === PerformanceTabMode.Future &&
+                (<FutureBlockProductionCommitee
+                  session={inputSession}
+                />)
+              }
+            </>
+        }
+        {groupIndex === 2 &&
+          <FinalityCommittee
+            currentSession={sessionInfo.currentSession}
+            session={inputSession}
+          />
+        }
       </section>
     </>
   );

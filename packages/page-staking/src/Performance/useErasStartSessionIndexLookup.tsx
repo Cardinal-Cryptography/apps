@@ -8,25 +8,34 @@ import { useMemo } from 'react';
 
 import { createNamedHook, useApi, useCall } from '@polkadot/react-hooks';
 
-type SessionIndexEntry = [{ args: [EraIndex] }, Option<u32>];
+ type SessionIndexEntry = [{ args: [EraIndex] }, Option<u32>];
+
+export interface EraFirstSession {
+  readonly era: number,
+  readonly firstSession: number,
+}
 
 function useErasStartSessionIndexLookupImpl () {
   const { api } = useApi();
 
   const erasStartSessionIndex = useCall<SessionIndexEntry[]>(api.query.staking.erasStartSessionIndex.entries);
 
-  const erasStartSessionIndexLookup = useMemo((): [number, number][] => {
-    const result: [number, number][] = [];
+  return useMemo((): EraFirstSession[] => {
+    const result: EraFirstSession[] = [];
 
     if (erasStartSessionIndex) {
       erasStartSessionIndex.filter(([, values]) => values.isSome)
         .forEach(([key, values]) => {
           const eraIndex = key.args[0];
 
-          result.push([eraIndex.toNumber(), values.unwrap().toNumber()]);
+          result.push({
+            era: eraIndex.toNumber(),
+            firstSession: values.unwrap().toNumber()
+          });
         });
-      result.sort(([eraIndexA], [eraIndexB]) => {
-        return eraIndexA - eraIndexB;
+
+      result.sort((eraFirstSessionA, eraFirstSessionB) => {
+        return eraFirstSessionA.era - eraFirstSessionB.era;
       });
     }
 
@@ -34,8 +43,6 @@ function useErasStartSessionIndexLookupImpl () {
   },
   [erasStartSessionIndex]
   );
-
-  return erasStartSessionIndexLookup;
 }
 
 export default createNamedHook('useErasStartSessionIndexLookup', useErasStartSessionIndexLookupImpl);

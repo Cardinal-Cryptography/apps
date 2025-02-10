@@ -3,7 +3,7 @@
 
 import type { DeriveStakingOverview } from '@polkadot/api-derive/types';
 import type { AppProps as Props } from '@polkadot/react-components/types';
-import type { ElectionStatus, ParaValidatorIndex, ValidatorId } from '@polkadot/types/interfaces';
+import type { ElectionStatus } from '@polkadot/types/interfaces';
 import type { BN } from '@polkadot/util';
 
 import React, { useCallback, useMemo, useState } from 'react';
@@ -18,6 +18,7 @@ import { isFunction } from '@polkadot/util';
 
 import Actions from './Actions/index.js';
 import Bags from './Bags/index.js';
+import FutureCommittee from './FutureCommittee/index.js';
 import Payouts from './Payouts/index.js';
 import PerformancePage from './Performance/index.js';
 import Query from './Query/index.js';
@@ -33,15 +34,12 @@ import useSortedTargets from './useSortedTargets.js';
 const HIDDEN_ACC = ['actions', 'payout'];
 
 const OPT_MULTI = {
-  defaultValue: [false, undefined, {}] as [boolean, BN | undefined, Record<string, boolean>],
-  transform: ([eraElectionStatus, minValidatorBond, validators, activeValidatorIndices]: [ElectionStatus | null, BN | undefined, ValidatorId[] | null, ParaValidatorIndex[] | null]): [boolean, BN | undefined, Record<string, boolean>] => [
+  defaultValue: [false, undefined] as [boolean, BN | undefined],
+  transform: ([eraElectionStatus, minValidatorBond]: [ElectionStatus | null, BN | undefined]): [boolean, BN | undefined] => [
     !!eraElectionStatus && eraElectionStatus.isOpen,
     minValidatorBond && !minValidatorBond.isZero()
       ? minValidatorBond
-      : undefined,
-    validators && activeValidatorIndices
-      ? activeValidatorIndices.reduce((all, index) => ({ ...all, [validators[index.toNumber()].toString()]: true }), {})
-      : {}
+      : undefined
   ]
 };
 
@@ -55,11 +53,9 @@ function StakingApp ({ basePath, className = '' }: Props): React.ReactElement<Pr
   const [loadNominations, setLoadNominations] = useState(false);
   const nominatedBy = useNominations(loadNominations);
   const stakingOverview = useCall<DeriveStakingOverview>(api.derive.staking.overview);
-  const [isInElection, minCommission] = useCallMulti<[boolean, BN | undefined, Record<string, boolean>]>([
+  const [isInElection, minCommission] = useCallMulti<[boolean, BN | undefined]>([
     api.query.staking.eraElectionStatus,
-    api.query.staking.minCommission,
-    api.query.session.validators,
-    (api.query.parasShared || api.query.shared)?.activeValidatorIndices
+    api.query.staking.minCommission
   ], OPT_MULTI);
   const ownPools = useOwnPools();
   const ownStashes = useOwnStashInfos();
@@ -131,6 +127,10 @@ function StakingApp ({ basePath, className = '' }: Props): React.ReactElement<Pr
     {
       name: 'performance',
       text: t('Performance')
+    },
+    {
+      name: 'futureCommittee',
+      text: t('Future Committee')
     },
     {
       name: 'suspensions',
@@ -207,6 +207,10 @@ function StakingApp ({ basePath, className = '' }: Props): React.ReactElement<Pr
           <Route
             element={<PerformancePage />}
             path='performance'
+          />
+          <Route
+            element={<FutureCommittee />}
+            path='futureCommittee'
           />
           <Route
             element={<SuspensionsPage />}

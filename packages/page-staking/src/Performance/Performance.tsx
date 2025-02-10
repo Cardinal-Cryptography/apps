@@ -1,7 +1,6 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { DeriveEraExposure } from '@polkadot/api-derive/types';
 import type { StorageKey } from '@polkadot/types';
 import type { AnyTuple, Codec } from '@polkadot/types/types';
 import type { ValidatorPerformance } from './useCommitteePerformance.js';
@@ -10,51 +9,33 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
 import { styled } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
+import { useApi } from '@polkadot/react-hooks';
 
+import useSessionValidators from '../useSessionValidators.js';
 import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
 import { parseSessionBlockCount } from './useCommitteePerformance.js';
-
-interface Props {
-  session: number,
-  era: number,
-}
 
 export interface EraValidatorPerformance {
   validatorPerformance: ValidatorPerformance;
   isCommittee: boolean;
 }
 
-function Performance ({ era }: Props): React.ReactElement<Props> {
+function Performance () {
   const { api } = useApi();
 
   const [sessionValidatorBlockCountLookup, setSessionValidatorBlockCountLookup] = useState<[string, number][]>([]);
   const [expectedBlockCountInSessions, setExpectedBlockCountInSessions] = useState<number | undefined>(undefined);
-  const sessionValidators = useCall<Codec[]>(api.query.session.validators);
-
-  const sessionValidatorsStrings = useMemo(() => {
-    return sessionValidators?.map((validator) => validator.toString());
-  }, [sessionValidators]);
-
-  const eraExposure = useCall<DeriveEraExposure>(api.derive.staking.eraExposure, [era]);
-  const eraValidators = useMemo(() => {
-    if (eraExposure?.validators) {
-      return Object.keys(eraExposure?.validators);
-    }
-
-    return [];
-  }, [eraExposure]
-  );
+  const sessionValidators = useSessionValidators(api);
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
-    if (!sessionValidatorsStrings) {
+    if (!sessionValidators || sessionValidators.length === 0) {
       return [];
     }
 
     const validatorPerformancesCommittee =
-      sessionValidatorsStrings.map((validator) => {
+      sessionValidators.map((validator) => {
         const maybeBlockCount = sessionValidatorBlockCountLookup.find((elem) => elem[0] === validator);
 
         return {
@@ -66,24 +47,13 @@ function Performance ({ era }: Props): React.ReactElement<Props> {
         };
       });
 
-    const nonCommitteeAccountIds = eraValidators.filter((validator) => !sessionValidatorsStrings.find((value) => validator === value));
-    const validatorPerformancesNonCommittee = nonCommitteeAccountIds.map((accountId) => {
-      return {
-        isCommittee: false,
-        validatorPerformance: {
-          accountId,
-          blockCount: 0
-        }
-      };
-    });
-
     const sessionPeriod = Number(getCommitteeManagement(api).consts.sessionPeriod.toString());
 
-    setExpectedBlockCountInSessions(sessionPeriod / sessionValidatorsStrings.length);
+    setExpectedBlockCountInSessions(sessionPeriod / sessionValidators.length);
 
-    return validatorPerformancesCommittee.concat(validatorPerformancesNonCommittee);
+    return validatorPerformancesCommittee;
   },
-  [api, eraValidators, sessionValidatorBlockCountLookup, sessionValidatorsStrings]
+  [api, sessionValidatorBlockCountLookup, sessionValidators]
 
   );
 
