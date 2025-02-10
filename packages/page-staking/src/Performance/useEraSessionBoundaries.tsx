@@ -13,8 +13,7 @@ export interface EraSessionBoundaries extends EraFirstSession {
   eraEndSession?: number;
 }
 
-// Returns given era start first end last session. If session is undefined, assume it's current session.
-// This should always be called
+// Returns given era start first end last session.
 function useEraSessionBoundariesImpl (session: number): EraSessionBoundaries | undefined {
   const erasStartSessionIndexLookup = useErasStartSessionIndexLookup();
 

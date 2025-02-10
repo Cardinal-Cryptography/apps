@@ -26,16 +26,27 @@ function PerformancePage (): React.ReactElement {
   const { api } = useApi();
   const { t } = useTranslation();
 
-  const groups = [
-    { text: t('Era validators'), value: 'validators' },
-    { text: t('Block production committee'), value: 'block' },
-    { text: t('Finality committee'), value: 'finality' }
-  ];
-
   const [groupIndex, setGroupIndex] = useState(1);
 
   const [inputSession, setInputSession] = useState<number | undefined>(undefined);
   const [performanceTabMode, setPerformanceTabMode] = useState<PerformanceTabMode | undefined>(undefined);
+
+  const groups = [
+    {
+      isDisabled: performanceTabMode === PerformanceTabMode.Future,
+      text: t('Era validators'),
+      value: 'validators'
+    },
+    {
+      text: t('Block production committee'),
+      value: 'block'
+    },
+    {
+      isDisabled: performanceTabMode === PerformanceTabMode.Future,
+      text: t('Finality committee'),
+      value: 'finality'
+    }
+  ];
 
   const sessionInfo = useSessionInfo();
 
@@ -91,12 +102,11 @@ function PerformancePage (): React.ReactElement {
       </section>
       <section>
         <>
-          {performanceTabMode !== PerformanceTabMode.Future &&
           <ToggleGroup
             onChange={setGroupIndex}
             options={groups}
             value={groupIndex}
-          />}
+          />
         </>
       </section>
       <section>

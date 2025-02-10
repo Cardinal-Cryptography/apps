@@ -21,7 +21,7 @@ export interface EraValidatorPerformance {
   isCommittee: boolean;
 }
 
-function Performance (): React.ReactElement<null> {
+function Performance () {
   const { api } = useApi();
 
   const [sessionValidatorBlockCountLookup, setSessionValidatorBlockCountLookup] = useState<[string, number][]>([]);

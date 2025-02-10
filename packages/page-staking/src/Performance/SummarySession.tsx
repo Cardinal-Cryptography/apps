@@ -3,7 +3,7 @@
 
 import type { PerformanceTabMode } from './index.js';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { CardSummary } from '@polkadot/react-components';
 import { formatNumber } from '@polkadot/util';
@@ -24,13 +24,7 @@ function SummarySession ({ className, performanceTabMode, session }: Props): Rea
   // displayed era in this summary would be incorrect for era + 1 sessions
   const eraSessionBoundaries = useEraSessionBoundaries(session);
 
-  const era = useMemo(() => {
-    if (eraSessionBoundaries) {
-      return eraSessionBoundaries.era;
-    }
-
-    return undefined;
-  }, [eraSessionBoundaries]);
+  const era = eraSessionBoundaries?.era;
 
   const sessionLabel: string[] = [
     'past session',

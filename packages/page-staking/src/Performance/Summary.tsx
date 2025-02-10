@@ -31,15 +31,11 @@ function Summary (
     <SummaryBox className={className}>
       <section>
         <CardSummary label={t('block production committee size')}>
-          <span className={committeeLength ? '' : '--tmp'}>
-            {formatNumber(committeeLength || 0)}
-          </span>
+          {formatNumber(committeeLength)}
         </CardSummary>
         {expectedBlockCount !== undefined &&
             <CardSummary label={t('expected block count')}>
-              <span className={expectedBlockCount ? '' : '--tmp'}>
-                {formatNumber(expectedBlockCount || 0)}
-              </span>
+              {formatNumber(expectedBlockCount)}
             </CardSummary>
         }
       </section>

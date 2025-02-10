@@ -10,7 +10,7 @@ import useSessionInfo from '../Performance/useSessionInfo.js';
 import FutureValidators from './FutureValidators.js';
 import SummarySession from './SummarySession.js';
 
-function PerformancePage (): React.ReactElement {
+function FutureCommitteePage (): React.ReactElement {
   const { api } = useApi();
 
   const sessionInfo = useSessionInfo();
@@ -44,4 +44,4 @@ function PerformancePage (): React.ReactElement {
   );
 }
 
-export default React.memo(PerformancePage);
+export default React.memo(FutureCommitteePage);
