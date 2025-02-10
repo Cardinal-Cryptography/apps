@@ -67,8 +67,8 @@ function FutureValidators ({ currentSession, maximumSessionNumber }: Props): Rea
           currentSessionCommittee: sessionValidators.includes(accountId),
           nextSessionInCommittee: nextCommittee?.session
         };
-      }).sort((_, b) => {
-        return b.currentSessionCommittee ? 1 : -1;
+      }).sort((a, b) => {
+        return Number(b.currentSessionCommittee) - Number(a.currentSessionCommittee);
       });
     }
 

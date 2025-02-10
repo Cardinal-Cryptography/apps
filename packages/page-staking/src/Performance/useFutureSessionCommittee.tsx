@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { SessionCommitteeV14, SessionCommitteeV15, SessionNotWithinRange } from '@polkadot/apps-config/src/types.js';
-import type { u32 } from '@polkadot/types';
 import type { AccountId32 } from '@polkadot/types/interfaces';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -18,15 +17,15 @@ interface FutureCommitteeResult {
   finalizers: string[];
 }
 
-function instanceOfSessionCommitteeV15 (object: any): object is SessionCommitteeV15<AccountId32> {
+function instanceOfSessionCommitteeV15 (object: SessionCommitteeV15<AccountId32> | SessionCommitteeV14<AccountId32>): object is SessionCommitteeV15<AccountId32> {
   return 'finalizers' in object && 'producers' in object;
 }
 
-function instanceOfSessionCommitteeV14 (object: any): object is SessionCommitteeV14<AccountId32> {
+function instanceOfSessionCommitteeV14 (object: SessionCommitteeV15<AccountId32> | SessionCommitteeV14<AccountId32>): object is SessionCommitteeV14<AccountId32> {
   return 'finalityCommittee' in object && 'blockProducers' in object;
 }
 
-function instanceOfSessionNotWithinRange (object: any): object is SessionNotWithinRange {
+function instanceOfSessionNotWithinRange (object: FutureCommitteeResult | SessionNotWithinRange): object is SessionNotWithinRange {
   return 'lowerLimit' in object && 'upperLimit' in object;
 }
 
@@ -40,9 +39,11 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
 
     if (!predictSessionCommittee) {
       console.error('api.call.alephSessionApi.predictSessionCommittee is undefined!');
+
+      return undefined;
     }
 
-    const predictCommitteePromises = sessions.map((session) => predictSessionCommittee?.(session as unknown as u32));
+    const predictCommitteePromises = sessions.map((session) => predictSessionCommittee?.(session));
 
     Promise.all(predictCommitteePromises).then((futureCommitteesEncoded) => {
       setAllPredictedCommettees(
