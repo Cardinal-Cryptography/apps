@@ -32,7 +32,7 @@ function instanceOfSessionNotWithinRange (object: FutureCommitteeResult | Sessio
 function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
   const { api } = useApi();
 
-  const [allPredictedCommettees, setAllPredictedCommettees] = useState<(FutureCommitteeResult | undefined | SessionNotWithinRange)[]>([]);
+  const [allPredictedCommittees, setAllPredictedCommittees] = useState<(FutureCommitteeResult | undefined | SessionNotWithinRange)[]>([]);
 
   useEffect(() => {
     const predictSessionCommittee = api.call?.alephSessionApi?.predictSessionCommittee;
@@ -46,7 +46,7 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
     const predictCommitteePromises = sessions.map((session) => predictSessionCommittee?.(session));
 
     Promise.all(predictCommitteePromises).then((futureCommitteesEncoded) => {
-      setAllPredictedCommettees(
+      setAllPredictedCommittees(
         futureCommitteesEncoded.map((futureCommittee) => {
           if (!futureCommittee) {
             return undefined;
@@ -91,9 +91,9 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
   );
 
   return useMemo(() => {
-    if (allPredictedCommettees.length > 0) {
+    if (allPredictedCommittees.length > 0) {
       const zipped: [number, (FutureCommitteeResult | undefined | SessionNotWithinRange)][] = sessions.map(function (session, index) {
-        return [session, allPredictedCommettees[index]];
+        return [session, allPredictedCommittees[index]];
       });
 
       return zipped.reduce(function (filtered: FutureCommittee[], [session, maybeFutureCommittee]) {
@@ -120,7 +120,7 @@ function useFutureSessionCommitteeImpl (sessions: number[]): FutureCommittee[] {
     }
 
     return [];
-  }, [allPredictedCommettees, sessions]);
+  }, [allPredictedCommittees, sessions]);
 }
 
 export default createNamedHook('useFutureSessionCommittee', useFutureSessionCommitteeImpl);
