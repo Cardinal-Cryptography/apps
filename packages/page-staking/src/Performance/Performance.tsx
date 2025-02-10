@@ -9,8 +9,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
 import { styled } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
+import { useApi } from '@polkadot/react-hooks';
 
+import useSessionValidators from '../useSessionValidators.js';
 import ActionsBanner from './ActionsBanner.js';
 import BlockProductionCommitteeList from './BlockProductionCommitteeList.js';
 import Summary from './Summary.js';
@@ -26,19 +27,15 @@ function Performance () {
 
   const [sessionValidatorBlockCountLookup, setSessionValidatorBlockCountLookup] = useState<[string, number][]>([]);
   const [expectedBlockCountInSessions, setExpectedBlockCountInSessions] = useState<number | undefined>(undefined);
-  const sessionValidators = useCall<Codec[]>(api.query.session.validators);
-
-  const sessionValidatorsStrings = useMemo(() => {
-    return sessionValidators?.map((validator) => validator.toString());
-  }, [sessionValidators]);
+  const sessionValidators = useSessionValidators(api);
 
   const eraValidatorPerformances: EraValidatorPerformance[] = useMemo(() => {
-    if (!sessionValidatorsStrings) {
+    if (!sessionValidators || sessionValidators.length === 0) {
       return [];
     }
 
     const validatorPerformancesCommittee =
-      sessionValidatorsStrings.map((validator) => {
+      sessionValidators.map((validator) => {
         const maybeBlockCount = sessionValidatorBlockCountLookup.find((elem) => elem[0] === validator);
 
         return {
@@ -52,11 +49,11 @@ function Performance () {
 
     const sessionPeriod = Number(getCommitteeManagement(api).consts.sessionPeriod.toString());
 
-    setExpectedBlockCountInSessions(sessionPeriod / sessionValidatorsStrings.length);
+    setExpectedBlockCountInSessions(sessionPeriod / sessionValidators.length);
 
     return validatorPerformancesCommittee;
   },
-  [api, sessionValidatorBlockCountLookup, sessionValidatorsStrings]
+  [api, sessionValidatorBlockCountLookup, sessionValidators]
 
   );
 

@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react';
 import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
 import { createNamedHook, useApi } from '@polkadot/react-hooks';
 
+import { removeDuplicates } from '../useSessionValidators.js';
+
 export interface ValidatorPerformance {
   accountId: string,
   blockCount?: number,
@@ -133,9 +135,11 @@ function useSessionCommitteePerformanceImpl (sessions: number[]): SessionCommitt
       const validatorsPromises = apis.map((api) => api.query.session.validators());
 
       Promise.all(validatorsPromises).then((validatorsOfValidators: Codec[][]) =>
-        setCommittees(validatorsOfValidators.map((validators) =>
-          validators.map((validator) => validator.toString()))))
-        .catch(console.error);
+        setCommittees(validatorsOfValidators.map((validators) => {
+          const accountIds = validators.map((validator) => validator.toString());
+
+          return removeDuplicates(accountIds);
+        }))).catch(console.error);
     }
     ).catch(console.error);
   },
