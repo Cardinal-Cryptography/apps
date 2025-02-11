@@ -85,11 +85,8 @@ function useSuspensions (): SuspensionEvent[] | undefined {
   const [suspensionEvents, setSuspensionEvents] = useState<SuspensionEvent[] | undefined>(undefined);
   const productionBanConfig = useCall<ProductionBanConfig>(getCommitteeManagement(api).query.productionBanConfig);
 
-  console.log('productionBanConfig', productionBanConfig?.toString());
   const currentProductionBanPeriod = productionBanConfig?.banPeriod;
   const finalityBanConfig = useCall<FinalityBanConfig>(getCommitteeManagement(api).query.finalityBanConfig);
-
-  console.log('finalityBanConfig', finalityBanConfig?.toString());
   const currentFinalityBanPeriod = finalityBanConfig?.banPeriod;
 
   const erasElectionsSessionIndexLookup = useMemo((): [number, number][] => {
