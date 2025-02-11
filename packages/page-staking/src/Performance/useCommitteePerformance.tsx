@@ -15,7 +15,6 @@ import { removeDuplicates } from '../useSessionValidators.js';
 export interface ValidatorPerformance {
   accountId: string,
   blockCount?: number,
-  abftScore?: number,
 }
 
 export interface SessionCommitteePerformance {
