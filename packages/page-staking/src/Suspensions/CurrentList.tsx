@@ -49,7 +49,7 @@ function CurrentList ({ suspensions }: Props): React.ReactElement<Props> {
     return suspensions?.filter(
       ({ address, suspensionLiftsInEra }) =>
         !reservedValidators.find((value) => value === address) &&
-      (!activeOnly || sessionInfo === undefined || suspensionLiftsInEra >= sessionInfo.currentEra)
+      (!activeOnly || sessionInfo === undefined || suspensionLiftsInEra > sessionInfo.currentEra)
     );
   }, [suspensions, sessionInfo, reservedValidators, activeOnly]);
 

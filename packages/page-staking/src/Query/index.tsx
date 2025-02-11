@@ -1,8 +1,8 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import type { SessionIndex } from '@polkadot/types/interfaces';
 import type { INumber } from '@polkadot/types/types';
-import type { u32 } from '@polkadot/types-codec';
 import type { FutureCommittee } from '../Performance/useFutureSessionCommittee.js';
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -35,7 +35,7 @@ function Query ({ className }: Props): React.ReactElement<Props> {
   const { api } = useApi();
   const { value } = useParams<{ value: string }>();
   const [validatorId, setValidatorId] = useState<string | null>(value || null);
-  const underperformedValidatorSessionCount = useCall<u32>(
+  const underperformedValidatorSessionCount = useCall<SessionIndex>(
     getCommitteeManagement(api).query.underperformedValidatorSessionCount,
     [value]
   );
@@ -181,7 +181,9 @@ function Query ({ className }: Props): React.ReactElement<Props> {
       }
       {value && !!isAlephChain && groupIndex === 0 &&
       <SummaryBox className={className}>
-        <CardSummary label={t('Underperformed Session Count')}>
+        <CardSummary
+          label={t('Underperformed Production Session Count')}
+        >
           {underperformedValidatorSessionCount?.toString()}
         </CardSummary>
       </SummaryBox>
