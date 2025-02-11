@@ -69,13 +69,13 @@ function FinalizerAddress ({ abftScore, address, filterName, scoresEnabled }: Pr
             hover={hoverText}
             icon={'check'}
           />}
-        {abftScore !== undefined && abftScore > 4 && abftScore < 11 &&
+        {abftScore !== undefined && abftScore > 4 && abftScore <= 11 &&
           <Badge
             color={'orange'}
             hover={hoverText}
             icon={'warning'}
           />}
-        {abftScore !== undefined && abftScore >= 11 &&
+        {abftScore !== undefined && abftScore > 11 &&
           <Badge
             color={'red'}
             hover={hoverText}
