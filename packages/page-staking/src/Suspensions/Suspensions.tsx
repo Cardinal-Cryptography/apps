@@ -33,19 +33,19 @@ function parseEvents (events: EventRecord[]): SuspensionReasons {
 
       const reasons: SuspensionReasons = raw.map((value) => {
         const account = value[0].toString();
-        const reasonAndEra = value[1].toJSON() as unknown as BanInfo;
+        const banInfo = value[1].toJSON() as unknown as BanInfo;
 
-        const reasonTypeAndValue = reasonAndEra.reason;
-        const era = Number(reasonAndEra.start.toString());
+        const reason = banInfo.reason;
+        const era = Number(banInfo.start.toString());
 
-        if (reasonTypeAndValue.otherReason !== undefined) {
-          return [account, reasonTypeAndValue.otherReason.toString(), era];
-        } else if (reasonTypeAndValue.insufficientUptime !== undefined) {
-          return [account, 'Insufficient uptime in at least ' + reasonTypeAndValue.insufficientUptime.toString() + ' sessions', era];
+        if (reason.otherReason !== undefined) {
+          return [account, reason.otherReason.toString(), era];
+        } else if (reason.insufficientUptime !== undefined) {
+          return [account, 'Insufficient uptime in at least ' + reason.insufficientUptime.toString() + ' sessions', era];
         } else {
-          return undefined;
+          return [account, 'Unknown ban reason', era];
         }
-      }).filter((reason) => reason !== undefined);
+      });
 
       return reasons;
     }).flat();

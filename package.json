@@ -100,6 +100,7 @@
     "@polkadot/api-augment": "^13.2.1",
     "@polkadot/api-base": "^13.2.1",
     "@polkadot/api-contract": "^13.2.1",
+    "@polkadot/api-derive@npm:13.2.1": "patch:@polkadot/api-derive@npm%3A13.2.1#~/.yarn/patches/@polkadot-api-derive-npm-13.2.1-19d2cc1087.patch",
     "@polkadot/hw-ledger": "^13.1.1",
     "@polkadot/keyring": "^13.1.1",
     "@polkadot/networks": "^13.1.1",
@@ -123,7 +124,6 @@
     "@polkadot/x-textdecoder": "^13.1.1",
     "@polkadot/x-textencoder": "^13.1.1",
     "@polkadot/x-ws": "^13.1.1",
-    "typescript": "^5.3.3",
-    "@polkadot/api-derive@npm:13.2.1": "patch:@polkadot/api-derive@npm%3A13.2.1#~/.yarn/patches/@polkadot-api-derive-npm-13.2.1-19d2cc1087.patch"
+    "typescript": "^5.3.3"
   }
 }
