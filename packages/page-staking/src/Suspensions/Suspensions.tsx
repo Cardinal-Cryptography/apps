@@ -1,7 +1,7 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { u64, Vec } from '@polkadot/types';
+import type { u8, u64, Vec } from '@polkadot/types';
 import type { EventRecord, Hash } from '@polkadot/types/interfaces';
 import type { Codec } from '@polkadot/types/types';
 import type { u32 } from '@polkadot/types-codec';
@@ -16,6 +16,16 @@ import useErasStartSessionIndexLookup from '../Performance/useErasStartSessionIn
 
 type SuspensionReasons = [string, string, number][];
 
+interface BanReason {
+  insufficientUptime?: u32,
+  otherReason?: Vec<u8>,
+}
+
+interface BanInfo {
+  reason: BanReason,
+  start: u32,
+}
+
 function parseEvents (events: EventRecord[]): SuspensionReasons {
   return events.filter(({ event }) => COMMITTEE_MANAGEMENT_NAMES.includes(event.section) && event.method === 'BanValidators')
     .map(({ event }) => {
@@ -23,21 +33,19 @@ function parseEvents (events: EventRecord[]): SuspensionReasons {
 
       const reasons: SuspensionReasons = raw.map((value) => {
         const account = value[0].toString();
-        const reasonAndEra = value[1].toHuman() as unknown as Record<string, Codec>;
+        const reasonAndEra = value[1].toJSON() as unknown as BanInfo;
 
-        const reasonTypeAndValue = reasonAndEra.reason as unknown as Record<string, string>;
-        const reasonType = Object.keys(reasonTypeAndValue)[0];
-        const reasonValue = Object.values(reasonTypeAndValue)[0];
+        const reasonTypeAndValue = reasonAndEra.reason;
         const era = Number(reasonAndEra.start.toString());
 
-        if (reasonType === 'OtherReason') {
-          return [account, reasonValue, era];
-        } else if (reasonType === 'InsufficientUptime') {
-          return [account, 'Insufficient uptime in at least ' + reasonValue + ' sessions', era];
+        if (reasonTypeAndValue.otherReason !== undefined) {
+          return [account, reasonTypeAndValue.otherReason.toString(), era];
+        } else if (reasonTypeAndValue.insufficientUptime !== undefined) {
+          return [account, 'Insufficient uptime in at least ' + reasonTypeAndValue.insufficientUptime.toString() + ' sessions', era];
         } else {
-          return [account, reasonType + ': ' + reasonValue, era];
+          return undefined;
         }
-      });
+      }).filter((reason) => reason !== undefined);
 
       return reasons;
     }).flat();
