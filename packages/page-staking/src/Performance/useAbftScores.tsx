@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Option, Struct, Vec } from '@polkadot/types';
-import type { Hash, SessionIndex } from '@polkadot/types/interfaces';
+import type { SessionIndex } from '@polkadot/types/interfaces';
 import type { u16, u32 } from '@polkadot/types-codec';
 
 import { useEffect, useState } from 'react';
 
-import { getCommitteeManagement } from '@polkadot/react-api';
+import { getCommitteeManagement } from '@polkadot/react-api/getCommitteeManagement';
 import { createNamedHook, useApi, useCall } from '@polkadot/react-hooks';
 
 interface Score extends Struct {
@@ -26,31 +26,23 @@ const OPT_BOND = {
 function AbftScoresImpl (session: number) {
   const { api } = useApi();
 
-  const [firstBlockSessionHash, setFirstBlockSessionHash] = useState<Hash | undefined>(undefined);
   const [scoresEnabled, setScoresEnabled] = useState<boolean>(false);
   const sessionPeriod = Number(getCommitteeManagement(api).consts.sessionPeriod.toString());
 
   useEffect(() => {
     api.rpc.chain.getBlockHash(sessionPeriod * session + 1)
-      .then((blockHash) => setFirstBlockSessionHash(blockHash))
+      .then((firstBlockSessionHash) => {
+        api.at(firstBlockSessionHash.toString()).then((apiAtFirstBlock) => {
+          if (apiAtFirstBlock.query.aleph.abftScores !== undefined) {
+            apiAtFirstBlock.query.aleph.finalityVersion()
+              .then((finalityVersion) =>
+                setScoresEnabled(Number(finalityVersion.toString()) >= 5))
+              .catch(console.error);
+          }
+        }).catch(console.error);
+      })
       .catch(console.error);
-  },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  [api, session]
-  );
-
-  useEffect(() => {
-    if (firstBlockSessionHash) {
-      api.at(firstBlockSessionHash.toString()).then((apiAtFirstBlock) => {
-        if (apiAtFirstBlock.query.aleph.abftScores !== undefined) {
-          apiAtFirstBlock.query.aleph.finalityVersion()
-            .then((finalityVersion) =>
-              setScoresEnabled(Number(finalityVersion.toString()) >= 5))
-            .catch(console.error);
-        }
-      }).catch(console.error);
-    }
-  }, [api, firstBlockSessionHash]);
+  }, [api, session, sessionPeriod]);
 
   return {
     abftScores: useCall<Score | undefined>(scoresEnabled && api.query.aleph.abftScores, [session], OPT_BOND),

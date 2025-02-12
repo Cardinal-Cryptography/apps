@@ -1,8 +1,6 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ApiPromise } from '@polkadot/api';
-
 import React, { useCallback, useMemo } from 'react';
 
 import { AddressSmall, Badge, Icon } from '@polkadot/react-components';
@@ -16,19 +14,13 @@ interface Props {
   abftScore?: number,
 }
 
-function useAddressCalls (_api: ApiPromise, address: string) {
-  const accountInfo = useDeriveAccountInfo(address);
-
-  return { accountInfo };
-}
-
 function queryAddress (address: string) {
   window.location.hash = `/staking/query/${address}`;
 }
 
 function FinalizerAddress ({ abftScore, address, filterName, scoresEnabled }: Props): React.ReactElement<Props> | null {
   const { api } = useApi();
-  const { accountInfo } = useAddressCalls(api, address);
+  const accountInfo = useDeriveAccountInfo(address);
   const { primaryDomain: domain } = useAddressToDomain(address);
 
   const isVisible = useMemo(

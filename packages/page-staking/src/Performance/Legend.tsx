@@ -18,7 +18,7 @@ function Legend ({ className }: Props): React.ReactElement<Props> {
           hover='no more than 4 units behind'
           icon='check'
         />
-        <span>{'Ideal performance'}</span>
+        <span>Ideal performance</span>
       </span>
       <span>
         <Badge
@@ -26,7 +26,7 @@ function Legend ({ className }: Props): React.ReactElement<Props> {
           hover='from 4 to 11 units behind'
           icon='warning'
         />
-        <span>{'acceptable performance'}</span>
+        <span>acceptable performance</span>
       </span>
       <span>
         <Badge
@@ -34,7 +34,7 @@ function Legend ({ className }: Props): React.ReactElement<Props> {
           hover='more than 11 units behind'
           icon='skull'
         />
-        <span>{'under-performance'}</span>
+        <span>under-performance</span>
       </span>
     </StyledDiv>
   );

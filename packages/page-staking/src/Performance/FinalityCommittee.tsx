@@ -1,7 +1,7 @@
 // Copyright 2017-2025 @polkadot/app-staking authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { CardSummary, SummaryBox, Table } from '@polkadot/react-components';
 import { useNextTick } from '@polkadot/react-hooks';
@@ -33,32 +33,24 @@ function FinalityCommittee ({ className, currentSession, session }: Props) {
 
   const finalizers: Finalizer[] = useMemo(() => {
     if (finalityCommitteeAddresses?.length) {
-      return finalityCommitteeAddresses.map((accountId, index) => {
-        if (abftScores?.points.length === finalityCommitteeAddresses.length) {
-          return {
-            abftScore: abftScores.points.at(index)?.toNumber(),
-            accountId
-          };
-        }
-
-        return {
-          abftScore: undefined,
+      return finalityCommitteeAddresses.map((accountId, index) =>
+        ({
+          abftScore: abftScores?.points.at(index)?.toNumber(),
           accountId
-        };
-      });
+        })
+      );
     }
 
     return [];
   }, [abftScores, finalityCommitteeAddresses]
   );
 
-  const headerRef = useRef<[string, string, number?][]>(
+  const headerRef: [string, string, number?][] =
     [
       [t('finalizers'), 'start', 1],
       [t('ABFT score'), 'expand'],
       [t('stats'), 'expand']
-    ]
-  );
+    ];
 
   const list = useMemo(
     () => isNextTick
@@ -96,7 +88,7 @@ function FinalityCommittee ({ className, currentSession, session }: Props) {
             />
           </div>
         }
-        header={headerRef.current}
+        header={headerRef}
         legend={<Legend />}
       >
         {list.map(({ abftScore, accountId }): React.ReactNode => (
